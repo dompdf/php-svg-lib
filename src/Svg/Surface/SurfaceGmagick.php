@@ -11,10 +11,11 @@ namespace Svg\Surface;
 use Svg\Style;
 use Svg\TextStyle;
 
-class SurfacePDFLib implements SurfaceInterface
+class SurfaceGmagick implements SurfaceInterface
 {
     const DEBUG = false;
 
+    /** @var \GmagickDraw */
     private $canvas;
 
     private $width;
@@ -25,42 +26,39 @@ class SurfacePDFLib implements SurfaceInterface
 
     public function __construct($w, $h)
     {
-        if (self::DEBUG) echo __FUNCTION__ . "\n";
-
+        if (self::DEBUG) {
+            echo __FUNCTION__ . "\n";
+        }
         $this->width = $w;
         $this->height = $h;
 
-        $pdf = new \PDFlib();
+        $canvas = new \GmagickDraw();
 
-        /* all strings are expected as utf8 */
-        $pdf->set_option("stringformat=utf8");
-        $pdf->set_option("errorpolicy=return");
-
-        /*  open new PDF file; insert a file name to create the PDF on disk */
-        if ($pdf->begin_document("", "") == 0) {
-            die("Error: " . $pdf->get_errmsg());
-        }
-        $pdf->set_info("Creator", "PDFlib starter sample");
-        $pdf->set_info("Title", "starter_graphics");
-
-        $pdf->begin_page_ext($this->width, $this->height, "");
-
-        $this->canvas = $pdf;
+        $this->canvas = $canvas;
     }
 
     function out()
     {
-        if (self::DEBUG) echo __FUNCTION__ . "\n";
+        if (self::DEBUG) {
+            echo __FUNCTION__ . "\n";
+        }
 
-        $this->canvas->end_page_ext("");
-        $this->canvas->end_document("");
+        $image = new \Gmagick();
+        $image->newimage($this->width, $this->height);
+        $image->drawimage($this->canvas);
 
-        return $this->canvas->get_buffer();
+        $tmp = tempnam("", "gm");
+
+        $image->write($tmp);
+
+        return file_get_contents($tmp);
     }
 
     public function save()
     {
-        if (self::DEBUG) echo __FUNCTION__ . "\n";
+        if (self::DEBUG) {
+            echo __FUNCTION__ . "\n";
+        }
         $this->canvas->save();
     }
 
@@ -91,7 +89,7 @@ class SurfacePDFLib implements SurfaceInterface
     public function transform($a, $b, $c, $d, $e, $f)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->concat($a, -$b, -$c, $d, $e, -$f);
+        $this->canvas->concat($a, -$b, -$c, $d, $e, $f - $this->height);
     }
 
     public function setTransform($a, $b, $c, $d, $e, $f)
@@ -151,20 +149,15 @@ class SurfacePDFLib implements SurfaceInterface
             if (strpos($data, "base64") === 0) {
                 $data = base64_decode(substr($data, 7));
             }
-        }
-        else {
-            $data = file_get_contents($image);
-        }
 
-        $image = tempnam("", "svg");
-        file_put_contents($image, $data);
+            $image = tempnam("", "svg");
+            file_put_contents($image, $data);
+        }
 
         $img = $this->canvas->load_image("auto", $image, "");
 
         $sy = $this->y($sy) - $sh;
         $this->canvas->fit_image($img, $sx, $sy, 'boxsize={' . "$sw $sh" . '} fitmethod=entire');
-
-        unlink($image);
     }
 
     public function lineTo($x, $y)
@@ -244,12 +237,6 @@ class SurfacePDFLib implements SurfaceInterface
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
         $this->canvas->stroke();
-    }
-
-    public function endPath()
-    {
-        if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->endPath();
     }
 
     public function measureText($text)

@@ -17,6 +17,8 @@ class Ellipse extends Shape
 
     public function start($attribs)
     {
+        parent::start($attribs);
+
         if (isset($attribs['cx'])) {
             $this->cx = $attribs['cx'];
         }

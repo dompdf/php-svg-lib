@@ -51,7 +51,6 @@ class Image extends AbstractTag
 
     protected function after()
     {
-        $surface = $this->document->getSurface();
-        $surface->restore();
+        $this->document->getSurface()->restore();
     }
 } 

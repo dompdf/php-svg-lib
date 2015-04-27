@@ -74,6 +74,21 @@ class Style
         }
     }
 
+    /**
+     * @param $attributes
+     *
+     * @return Style
+     */
+    public function fromGroupAttributes($attributes)
+    {
+        $this->fillStyles($attributes);
+
+        if (isset($attributes["style"])) {
+            $styles = self::parseCssStyle($attributes["style"]);
+            $this->fillStyles($styles);
+        }
+    }
+
     protected function fillStyles($styles)
     {
         foreach ($this->getStyleMap() as $from => $spec) {
@@ -120,33 +135,112 @@ class Style
 
         // RGB color
         if (strpos($color, "rgb") !== false) {
-            $i = strpos($color, "(");
-            $j = strpos($color, ")");
+            return self::getTriplet($color);
+        }
 
-            // Bad color value
-            if ($i === false || $j === false) {
+        // RGB color
+        if (strpos($color, "hsl") !== false) {
+            $triplet = self::getTriplet($color, true);
+
+            if ($triplet == null) {
                 return null;
             }
 
-            $triplet = preg_split("/\\s*,\\s*/", trim(substr($color, $i + 1, $j - $i - 1)));
-            var_dump($triplet);
+            list($h, $s, $l) = $triplet;
 
-            if (count($triplet) != 3) {
-                return null;
+            $r = $l;
+            $g = $l;
+            $b = $l;
+            $v = ($l <= 0.5) ? ($l * (1.0 + $s)) : ($l + $s - $l * $s);
+            if ($v > 0) {
+                $m = $l + $l - $v;
+                $sv = ($v - $m) / $v;
+                $h *= 6.0;
+                $sextant = floor($h);
+                $fract = $h - $sextant;
+                $vsf = $v * $sv * $fract;
+                $mid1 = $m + $vsf;
+                $mid2 = $v - $vsf;
+
+                switch ($sextant) {
+                    case 0:
+                        $r = $v;
+                        $g = $mid1;
+                        $b = $m;
+                        break;
+                    case 1:
+                        $r = $mid2;
+                        $g = $v;
+                        $b = $m;
+                        break;
+                    case 2:
+                        $r = $m;
+                        $g = $v;
+                        $b = $mid1;
+                        break;
+                    case 3:
+                        $r = $m;
+                        $g = $mid2;
+                        $b = $v;
+                        break;
+                    case 4:
+                        $r = $mid1;
+                        $g = $m;
+                        $b = $v;
+                        break;
+                    case 5:
+                        $r = $v;
+                        $g = $m;
+                        $b = $mid2;
+                        break;
+                }
             }
 
-            foreach (array_keys($triplet) as $c) {
-                $triplet[$c] = trim($triplet[$c]);
+            return array(
+                $r * 255.0,
+                $g * 255.0,
+                $b * 255.0,
+            );
+        }
 
+        return null;
+    }
+
+    static function getTriplet($color, $percent = false) {
+        $i = strpos($color, "(");
+        $j = strpos($color, ")");
+
+        // Bad color value
+        if ($i === false || $j === false) {
+            return null;
+        }
+
+        $triplet = preg_split("/\\s*,\\s*/", trim(substr($color, $i + 1, $j - $i - 1)));
+        var_dump($triplet);
+
+        if (count($triplet) != 3) {
+            return null;
+        }
+
+        foreach (array_keys($triplet) as $c) {
+            $triplet[$c] = trim($triplet[$c]);
+
+            if ($percent) {
+                if ($triplet[$c][strlen($triplet[$c]) - 1] === "%") {
+                    $triplet[$c] = $triplet[$c] / 100;
+                }
+                else {
+                    $triplet[$c] = $triplet[$c] / 255;
+                }
+            }
+            else {
                 if ($triplet[$c][strlen($triplet[$c]) - 1] === "%") {
                     $triplet[$c] = round($triplet[$c] * 2.55);
                 }
             }
-
-            return $triplet;
         }
 
-        return null;
+        return $triplet;
     }
 
     static function parseHexColor($hex)

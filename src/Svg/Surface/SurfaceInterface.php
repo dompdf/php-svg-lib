@@ -41,6 +41,8 @@ interface SurfaceInterface
 
     public function stroke();
 
+    public function endPath();
+
     public function fillStroke();
 
     public function clip();

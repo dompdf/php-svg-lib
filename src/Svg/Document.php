@@ -24,11 +24,10 @@ use Svg\Tag\Rect;
 use Svg\Tag\Stop;
 use Svg\Tag\Text;
 
-class Document
+class Document extends AbstractTag
 {
     protected $filename;
     protected $inDefs = false;
-    protected $attributes;
 
     protected $x;
     protected $y;
@@ -50,12 +49,21 @@ class Document
         $this->filename = $filename;
     }
 
+    public function __construct() {
+
+    }
+
     /**
      * @return SurfaceInterface
      */
     public function getSurface()
     {
         return $this->surface;
+    }
+
+    public function getStack()
+    {
+        return $this->stack;
     }
 
     public function render(SurfaceInterface $surface)
@@ -111,8 +119,9 @@ class Document
                 return;
 
             case 'svg':
+                $tag = $this;
                 $this->svgOffset($attribs);
-                return;
+                break;
 
             case 'path':
                 $tag = new Path($this);
@@ -198,8 +207,6 @@ class Document
                 return;
 
             case 'svg':
-                return;
-
             case 'path':
             case 'rect':
             case 'circle':
@@ -212,8 +219,8 @@ class Document
             case 'lineargradient':
             case 'stop':
             case 'text':
-            case "g":
-            case "a":
+            case 'g':
+            case 'a':
                 $tag = array_pop($this->stack);
                 break;
         }

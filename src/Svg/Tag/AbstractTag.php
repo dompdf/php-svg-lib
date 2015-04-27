@@ -10,22 +10,39 @@ namespace Svg\Tag;
 
 use Svg\Document;
 use Svg\Style;
-use Svg\TextStyle;
 
 abstract class AbstractTag
 {
+    /** @var Document */
     protected $document;
 
     /** @var Style */
     protected $style;
+
+    protected $attributes;
 
     public function __construct(Document $document)
     {
         $this->document = $document;
     }
 
+    public function getParentGroup() {
+        $stack = $this->document->getStack();
+        for ($i = count($stack)-2; $i >= 0; $i--) {
+            $tag = $stack[$i];
+
+            if ($tag instanceof Group || $tag instanceof Document) {
+                return $tag;
+            }
+        }
+
+        return null;
+    }
+
     public final function handle($attributes)
     {
+        $this->attributes = $attributes;
+
         $this->before($attributes);
         $this->start($attributes);
     }

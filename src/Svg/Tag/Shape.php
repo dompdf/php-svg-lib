@@ -19,6 +19,12 @@ class Shape extends AbstractTag
         $surface->save();
 
         $style = new Style();
+
+        $group = $this->getParentGroup();
+        if ($group) {
+            $style->fromGroupAttributes($group->attributes);
+        }
+
         $style->fromAttributes($attribs);
         $surface->setStyle($style);
 
@@ -41,6 +47,9 @@ class Shape extends AbstractTag
             }
         } elseif ($stroke) {
             $surface->stroke();
+        }
+        else {
+            $surface->endPath();
         }
 
         $surface->restore();

@@ -17,13 +17,23 @@ class Group extends AbstractTag
         $surface = $this->document->getSurface();
 
         $style = new Style();
+
+        $group = $this->getParentGroup();
+        if ($group) {
+            $style->fromGroupAttributes($group->attributes);
+        }
+
         $style->fromAttributes($attribs);
         $surface->setStyle($style);
     }
 
-    protected function before()
+    protected function before($attribs)
     {
+        parent::before($attribs);
+
         $this->document->getSurface()->save();
+
+        $this->applyTransform($attribs);
     }
 
     protected function after()
