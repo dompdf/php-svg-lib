@@ -9,7 +9,6 @@
 namespace Svg\Surface;
 
 use Svg\Style;
-use Svg\TextStyle;
 
 class SurfaceGmagick implements SurfaceInterface
 {
@@ -237,6 +236,12 @@ class SurfaceGmagick implements SurfaceInterface
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
         $this->canvas->stroke();
+    }
+
+    public function endPath()
+    {
+        if (self::DEBUG) echo __FUNCTION__ . "\n";
+        //$this->canvas->endPath();
     }
 
     public function measureText($text)

@@ -97,7 +97,6 @@ class Path extends Shape
                 case 'h': // horizontal lineto, relative
                     $x += $current[1];
                     $surface->lineTo($x + $l, $y + $t);
-                    var_dump("horiz $x , $y");
                     break;
 
                 case 'H': // horizontal lineto, absolute
