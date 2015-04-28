@@ -31,7 +31,7 @@ class SurfaceCpdf implements SurfaceInterface
         $this->width = $w;
         $this->height = $h;
 
-        $canvas = new Cpdf(array(0, 0, $w, $h));
+        $canvas = new CPdf(array(0, 0, $w, $h));
 
         $this->canvas = $canvas;
     }

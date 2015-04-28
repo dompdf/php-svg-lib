@@ -18,7 +18,7 @@
 
 namespace Svg\Surface;
 
-class Cpdf
+class CPdf
 {
 
     /**
