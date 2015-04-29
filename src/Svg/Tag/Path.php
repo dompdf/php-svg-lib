@@ -24,6 +24,11 @@ class Path extends Shape
         'a' => 7,
     );
 
+    static $repeatedCommands = array(
+        'm' => 'l',
+        'M' => 'L',
+    );
+
     public function start($attribs)
     {
         $commands = array();
@@ -43,13 +48,17 @@ class Path extends Shape
                     ($commandLength = self::$commandLengths[$commandLower]) &&
                     count($item) > $commandLength
                 ) {
+                    $repeatedCommand = isset(self::$repeatedCommands[$c[1]]) ? self::$repeatedCommands[$c[1]] : $c[1];
+                    $command = $c[1];
+
                     for ($k = 0, $klen = count($item); $k < $klen; $k += $commandLength) {
                         $_item = array_slice($item, $k, $k + $commandLength);
-                        array_unshift($_item, $c[1]);
+                        array_unshift($_item, $command);
                         $path[] = $_item;
+
+                        $command = $repeatedCommand;
                     }
-                }
-                else {
+                } else {
                     array_unshift($item, $c[1]);
                     $path[] = $item;
                 }
@@ -169,12 +178,11 @@ class Path extends Shape
                     $tempY = $y + $current[4];
 
                     if (!preg_match('/[CcSs]/', $previous[0])) {
-                    // If there is no previous command or if the previous command was not a C, c, S, or s,
-                    // the control point is coincident with the current point
+                        // If there is no previous command or if the previous command was not a C, c, S, or s,
+                        // the control point is coincident with the current point
                         $controlX = $x;
                         $controlY = $y;
-                    }
-                    else {
+                    } else {
                         // calculate reflection of previous control points
                         $controlX = 2 * $x - $controlX;
                         $controlY = 2 * $y - $controlY;
@@ -208,8 +216,7 @@ class Path extends Shape
                         // the control point is coincident with the current point
                         $controlX = $x;
                         $controlY = $y;
-                    }
-                    else {
+                    } else {
                         // calculate reflection of previous control points
                         $controlX = 2 * $x - $controlX;
                         $controlY = 2 * $y - $controlY;
@@ -379,14 +386,14 @@ class Path extends Shape
 
     function drawArc(SurfaceInterface $surface, $fx, $fy, $coords)
     {
-        $rx    = $coords[0];
-        $ry    = $coords[1];
-        $rot   = $coords[2];
+        $rx = $coords[0];
+        $ry = $coords[1];
+        $rot = $coords[2];
         $large = $coords[3];
         $sweep = $coords[4];
-        $tx    = $coords[5];
-        $ty    = $coords[6];
-        $segs  = array(
+        $tx = $coords[5];
+        $ty = $coords[6];
+        $segs = array(
             array(),
             array(),
             array(),
@@ -458,7 +465,19 @@ class Path extends Shape
         $th3 = $mTheta + $mDelta;
 
         for ($i = 0; $i < $segments; $i++) {
-            $result[$i] = $this->segmentToBezier($mTheta, $th3, $cosTh, $sinTh, $rx, $ry, $cx1, $cy1, $mT, $fromX, $fromY);
+            $result[$i] = $this->segmentToBezier(
+                $mTheta,
+                $th3,
+                $cosTh,
+                $sinTh,
+                $rx,
+                $ry,
+                $cx1,
+                $cy1,
+                $mT,
+                $fromX,
+                $fromY
+            );
             $fromX = $result[$i][4];
             $fromY = $result[$i][5];
             $mTheta = $th3;
@@ -468,22 +487,26 @@ class Path extends Shape
         return $result;
     }
 
-    function segmentToBezier($th2, $th3, $cosTh, $sinTh, $rx, $ry, $cx1, $cy1, $mT, $fromX, $fromY) {
+    function segmentToBezier($th2, $th3, $cosTh, $sinTh, $rx, $ry, $cx1, $cy1, $mT, $fromX, $fromY)
+    {
         $costh2 = cos($th2);
         $sinth2 = sin($th2);
         $costh3 = cos($th3);
         $sinth3 = sin($th3);
         $toX = $cosTh * $rx * $costh3 - $sinTh * $ry * $sinth3 + $cx1;
         $toY = $sinTh * $rx * $costh3 + $cosTh * $ry * $sinth3 + $cy1;
-        $cp1X = $fromX + $mT * ( - $cosTh * $rx * $sinth2 - $sinTh * $ry * $costh2);
-        $cp1Y = $fromY + $mT * ( - $sinTh * $rx * $sinth2 + $cosTh * $ry * $costh2);
-        $cp2X = $toX + $mT * ( $cosTh * $rx * $sinth3 + $sinTh * $ry * $costh3);
-        $cp2Y = $toY + $mT * ( $sinTh * $rx * $sinth3 - $cosTh * $ry * $costh3);
+        $cp1X = $fromX + $mT * (-$cosTh * $rx * $sinth2 - $sinTh * $ry * $costh2);
+        $cp1Y = $fromY + $mT * (-$sinTh * $rx * $sinth2 + $cosTh * $ry * $costh2);
+        $cp2X = $toX + $mT * ($cosTh * $rx * $sinth3 + $sinTh * $ry * $costh3);
+        $cp2Y = $toY + $mT * ($sinTh * $rx * $sinth3 - $cosTh * $ry * $costh3);
 
         return array(
-            $cp1X, $cp1Y,
-            $cp2X, $cp2Y,
-            $toX, $toY
+            $cp1X,
+            $cp1Y,
+            $cp2X,
+            $cp2Y,
+            $toX,
+            $toY
         );
     }
 

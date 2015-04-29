@@ -3009,13 +3009,13 @@ EOT;
         if (!$incomplete) {
             if ($fill) {
                 $this->addContent(' f');
-            } else {
+            }
+
+            if ($stroke) {
                 if ($close) {
-                    //$this->addContent(' s'); // small 's' signifies closing the path as well
+                    $this->addContent(' s'); // small 's' signifies closing the path as well
                 } else {
-                    if ($stroke) {
-                        $this->addContent(' S');
-                    }
+                    $this->addContent(' S');
                 }
             }
         }
@@ -3080,6 +3080,11 @@ EOT;
     function fill()
     {
         $this->addContent("\nf");
+    }
+
+    function fillStroke()
+    {
+        $this->addContent("\nb");
     }
 
     /**

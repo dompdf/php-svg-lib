@@ -19,7 +19,7 @@ ob_start();
 $doc = new \Svg\Document();
 $doc->loadFile($file);
 
-$surface = new \Svg\Surface\SurfacePDFLib(600, 600);
+$surface = new \Svg\Surface\SurfaceCpdf(600, 600);
 $doc->render($surface);
 
 $pdf = $doc->getSurface()->out();

@@ -99,8 +99,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function fillStroke()
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->fill();
-        $this->canvas->stroke();
+        $this->canvas->fillStroke();
     }
 
     public function clip()

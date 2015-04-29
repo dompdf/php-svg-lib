@@ -216,7 +216,6 @@ class Style
         }
 
         $triplet = preg_split("/\\s*,\\s*/", trim(substr($color, $i + 1, $j - $i - 1)));
-        var_dump($triplet);
 
         if (count($triplet) != 3) {
             return null;
