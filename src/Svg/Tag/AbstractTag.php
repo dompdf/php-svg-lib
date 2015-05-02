@@ -34,7 +34,7 @@ abstract class AbstractTag
         for ($i = count($stack)-2; $i >= 0; $i--) {
             $tag = $stack[$i];
 
-            if ($tag instanceof Group) {
+            if ($tag instanceof Group || $tag instanceof Document) {
                 return $tag;
             }
         }

@@ -50,7 +50,7 @@ class Document extends AbstractTag
     }
 
     public function __construct() {
-
+        $this->setStyle(new DefaultStyle());
     }
 
     /**
