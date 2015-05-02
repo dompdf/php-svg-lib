@@ -8,6 +8,8 @@
 
 namespace Svg;
 
+use Svg\Tag\AbstractTag;
+
 class Style
 {
     const TYPE_COLOR = 1;
@@ -16,19 +18,21 @@ class Style
     const TYPE_ANGLE = 4;
     const TYPE_NUMBER = 5;
 
-    public $color = '';
-    public $fill = 'black';
-    public $fillOpacity = 1.0;
-    public $fillRule = 'nonzero';
+    public $color;
+    public $opacity;
 
-    public $stroke = 'none';
-    public $strokeOpacity = 1.0;
-    public $strokeLinecap = 'butt';
-    public $strokeLinejoin = 'miter';
-    public $strokeMiterlimit = 4;
-    public $strokeWidth = 1.0;
-    public $strokeDasharray = 0;
-    public $strokeDashoffset = 0;
+    public $fill;
+    public $fillOpacity;
+    public $fillRule;
+
+    public $stroke;
+    public $strokeOpacity;
+    public $strokeLinecap;
+    public $strokeLinejoin;
+    public $strokeMiterlimit;
+    public $strokeWidth;
+    public $strokeDasharray;
+    public $strokeDashoffset;
 
     public $fontFamily = 'serif';
     public $fontSize = 12;
@@ -74,18 +78,16 @@ class Style
         }
     }
 
-    /**
-     * @param $attributes
-     *
-     * @return Style
-     */
-    public function fromGroupAttributes($attributes)
-    {
-        $this->fillStyles($attributes);
+    public function inherit(AbstractTag $tag) {
+        $group = $tag->getParentGroup();
+        if ($group) {
+            $parent_style = $group->getStyle();
 
-        if (isset($attributes["style"])) {
-            $styles = self::parseCssStyle($attributes["style"]);
-            $this->fillStyles($styles);
+            foreach ($parent_style as $_key => $_value) {
+                if ($_value !== null) {
+                    $this->$_key = $_value;
+                }
+            }
         }
     }
 

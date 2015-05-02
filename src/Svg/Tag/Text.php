@@ -16,12 +16,18 @@ class Text extends Shape
 
     public function start($attribs)
     {
+        $document = $this->document;
+        $height = $this->document->getHeight();
+        $this->y = $height;
+
         if (isset($attribs['x'])) {
             $this->x = $attribs['x'];
         }
         if (isset($attribs['y'])) {
-            $this->y = $attribs['y'];
+            $this->y = $height - $attribs['y'];
         }
+
+        $document->getSurface()->transform(1, 0, 0, -1, 0, $height);
     }
 
     public function end()

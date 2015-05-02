@@ -19,13 +19,11 @@ class Shape extends AbstractTag
         $surface->save();
 
         $style = new Style();
-
-        $group = $this->getParentGroup();
-        if ($group) {
-            $style->fromGroupAttributes($group->attributes);
-        }
-
+        $style->inherit($this);
         $style->fromAttributes($attribs);
+
+        $this->setStyle($style);
+
         $surface->setStyle($style);
 
         $this->applyTransform($attribs);
@@ -36,7 +34,7 @@ class Shape extends AbstractTag
         $surface = $this->document->getSurface();
         $style = $surface->getStyle();
 
-        $fill = $style->fill && $style->fill !== "none";
+        $fill   = $style->fill   && $style->fill   !== "none";
         $stroke = $style->stroke && $style->stroke !== "none";
 
         if ($fill) {

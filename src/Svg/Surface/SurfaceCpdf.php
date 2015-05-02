@@ -9,6 +9,7 @@
 namespace Svg\Surface;
 
 use Svg\Style;
+use Svg\DefaultStyle;
 
 class SurfaceCpdf implements SurfaceInterface
 {
@@ -32,6 +33,10 @@ class SurfaceCpdf implements SurfaceInterface
         $this->height = $h;
 
         $canvas = new CPdf(array(0, 0, $w, $h));
+
+        // Flip PDF coordinate system so that the origin is in
+        // the top left rather than the bottom left
+        $canvas->transform(array(1, 0, 0, -1, 0, $h));
 
         $this->canvas = $canvas;
     }
@@ -69,19 +74,13 @@ class SurfaceCpdf implements SurfaceInterface
     public function translate($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->translate($x, -$y);
+        $this->canvas->translate($x, $y);
     }
 
     public function transform($a, $b, $c, $d, $e, $f)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->transform(array($a, -$b, -$c, $d, $e, -$f));
-    }
-
-    public function setTransform($a, $b, $c, $d, $e, $f)
-    {
-        if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->transform(array($a, -$b, -$c, $d, $e, -$f));
+        $this->canvas->transform(array($a, $b, $c, $d, $e, $f));
     }
 
     public function beginPath()
@@ -111,13 +110,8 @@ class SurfaceCpdf implements SurfaceInterface
     public function fillText($text, $x, $y, $maxWidth = null)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->set_text_pos($x, $this->y($y));
+        $this->canvas->set_text_pos($x, $y);
         $this->canvas->show($text);
-    }
-
-    private function y($y)
-    {
-        return $this->height - $y;
     }
 
     public function strokeText($text, $x, $y, $maxWidth = null)
@@ -179,7 +173,7 @@ class SurfaceCpdf implements SurfaceInterface
 
         switch ($type) {
             case IMAGETYPE_JPEG:
-                $this->canvas->addJpegFromFile($img, $x, $this->y($y) - $h, $w, $h);
+                $this->canvas->addJpegFromFile($img, $x, $y - $h, $w, $h);
                 break;
 
             case IMAGETYPE_GIF:
@@ -188,7 +182,7 @@ class SurfaceCpdf implements SurfaceInterface
                 $img = $this->_convert_gif_bmp_to_png($img, $type);
 
             case IMAGETYPE_PNG:
-                $this->canvas->addPngFromFile($img, $x, $this->y($y) - $h, $w, $h);
+                $this->canvas->addPngFromFile($img, $x, $y - $h, $w, $h);
                 break;
 
             default:
@@ -198,13 +192,13 @@ class SurfaceCpdf implements SurfaceInterface
     public function lineTo($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->lineTo($x, $this->y($y));
+        $this->canvas->lineTo($x, $y);
     }
 
     public function moveTo($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->moveTo($x, $this->y($y));
+        $this->canvas->moveTo($x, $y);
     }
 
     public function quadraticCurveTo($cpx, $cpy, $x, $y)
@@ -216,7 +210,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function bezierCurveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->curveTo($cp1x, $this->y($cp1y), $cp2x, $this->y($cp2y), $x, $this->y($y));
+        $this->canvas->curveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y);
     }
 
     public function arcTo($x1, $y1, $x2, $y2, $radius)
@@ -227,32 +221,32 @@ class SurfaceCpdf implements SurfaceInterface
     public function arc($x, $y, $radius, $startAngle, $endAngle, $anticlockwise = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->arc($x, $this->y($y), $radius, $startAngle, $endAngle);
+        $this->canvas->arc($x, $y, $radius, $startAngle, $endAngle);
     }
 
     public function circle($x, $y, $radius)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->ellipse($x, $this->y($y), $radius, $radius, 0, 8, 0, 360, true, false, false, false);
+        $this->canvas->ellipse($x, $y, $radius, $radius, 0, 8, 0, 360, true, false, false, false);
     }
 
     public function ellipse($x, $y, $radiusX, $radiusY, $rotation, $startAngle, $endAngle, $anticlockwise)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->ellipse($x, $this->y($y), $radiusX, $radiusY, 0, 8, 0, 360, false, false, false, false);
+        $this->canvas->ellipse($x, $y, $radiusX, $radiusY, 0, 8, 0, 360, false, false, false, false);
     }
 
     public function fillRect($x, $y, $w, $h)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->rect($x, $this->y($y), $w, $h);
+        $this->rect($x, $y, $w, $h);
         $this->fill();
     }
 
     public function rect($x, $y, $w, $h)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->rect($x, $this->y($y), $w, -$h);
+        $this->canvas->rect($x, $y, $w, $h);
     }
 
     public function fill()
@@ -264,7 +258,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function strokeRect($x, $y, $w, $h)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->rect($x, $this->y($y), $w, $h);
+        $this->rect($x, $y, $w, $h);
         $this->stroke();
     }
 
@@ -284,9 +278,9 @@ class SurfaceCpdf implements SurfaceInterface
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
         $style = $this->getStyle();
-        $font = $this->getFont($style->fontFamily, $style->fontStyle);
+        $this->getFont($style->fontFamily, $style->fontStyle);
 
-        return $this->canvas->stringwidth($text, $font, $this->getStyle()->fontSize);
+        return $this->canvas->getTextWidth($this->getStyle()->fontSize, $text);
     }
 
     public function getStyle()

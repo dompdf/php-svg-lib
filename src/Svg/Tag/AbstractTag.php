@@ -26,12 +26,15 @@ abstract class AbstractTag
         $this->document = $document;
     }
 
+    /**
+     * @return Group|null
+     */
     public function getParentGroup() {
         $stack = $this->document->getStack();
         for ($i = count($stack)-2; $i >= 0; $i--) {
             $tag = $stack[$i];
 
-            if ($tag instanceof Group || $tag instanceof Document) {
+            if ($tag instanceof Group) {
                 return $tag;
             }
         }
@@ -69,9 +72,9 @@ abstract class AbstractTag
     {
     }
 
-    protected function getAttributes()
+    public function getAttributes()
     {
-        return get_object_vars($this);
+        return $this->attributes;
     }
 
     protected function setStyle(Style $style)

@@ -66,6 +66,11 @@ class Document extends AbstractTag
         return $this->stack;
     }
 
+    public function getHeight()
+    {
+        return $this->height;
+    }
+
     public function render(SurfaceInterface $surface)
     {
         $this->surface = $surface;
@@ -106,7 +111,7 @@ class Document extends AbstractTag
         }
     }
 
-    private function _tagStart($parser, $name, $attribs)
+    private function _tagStart($parser, $name, $attributes)
     {
         $this->x = 0;
         $this->y = 0;
@@ -120,7 +125,7 @@ class Document extends AbstractTag
 
             case 'svg':
                 $tag = $this;
-                $this->svgOffset($attribs);
+                $this->svgOffset($attributes);
                 break;
 
             case 'path':
@@ -182,7 +187,7 @@ class Document extends AbstractTag
 
         if ($tag) {
             $this->stack[] = $tag;
-            $tag->handle($attribs);
+            $tag->handle($attributes);
         } else {
             echo "Unknown: '$name'\n";
         }

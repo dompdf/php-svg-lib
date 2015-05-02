@@ -29,22 +29,26 @@ class SurfacePDFLib implements SurfaceInterface
         $this->width = $w;
         $this->height = $h;
 
-        $pdf = new \PDFlib();
+        $canvas = new \PDFlib();
 
         /* all strings are expected as utf8 */
-        $pdf->set_option("stringformat=utf8");
-        $pdf->set_option("errorpolicy=return");
+        $canvas->set_option("stringformat=utf8");
+        $canvas->set_option("errorpolicy=return");
 
         /*  open new PDF file; insert a file name to create the PDF on disk */
-        if ($pdf->begin_document("", "") == 0) {
-            die("Error: " . $pdf->get_errmsg());
+        if ($canvas->begin_document("", "") == 0) {
+            die("Error: " . $canvas->get_errmsg());
         }
-        $pdf->set_info("Creator", "PDFlib starter sample");
-        $pdf->set_info("Title", "starter_graphics");
+        $canvas->set_info("Creator", "PDFlib starter sample");
+        $canvas->set_info("Title", "starter_graphics");
 
-        $pdf->begin_page_ext($this->width, $this->height, "");
+        $canvas->begin_page_ext($this->width, $this->height, "");
 
-        $this->canvas = $pdf;
+        // Flip PDF coordinate system so that the origin is in
+        // the top left rather than the bottom left
+        $canvas->setmatrix(1, 0, 0, -1, 0, $h);
+
+        $this->canvas = $canvas;
     }
 
     function out()
@@ -84,19 +88,13 @@ class SurfacePDFLib implements SurfaceInterface
     public function translate($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->translate($x, -$y);
+        $this->canvas->translate($x, $y);
     }
 
     public function transform($a, $b, $c, $d, $e, $f)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->concat($a, -$b, -$c, $d, $e, -$f);
-    }
-
-    public function setTransform($a, $b, $c, $d, $e, $f)
-    {
-        if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->setmatrix($a, -$b, -$c, $d, $e, -$f);
+        $this->canvas->concat($a, $b, $c, $d, $e, $f);
     }
 
     public function beginPath()
@@ -126,13 +124,8 @@ class SurfacePDFLib implements SurfaceInterface
     public function fillText($text, $x, $y, $maxWidth = null)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->set_text_pos($x, $this->y($y));
+        $this->canvas->set_text_pos($x, $y);
         $this->canvas->show($text);
-    }
-
-    private function y($y)
-    {
-        return $this->height - $y;
     }
 
     public function strokeText($text, $x, $y, $maxWidth = null)
@@ -160,7 +153,7 @@ class SurfacePDFLib implements SurfaceInterface
 
         $img = $this->canvas->load_image("auto", $image, "");
 
-        $sy = $this->y($sy) - $sh;
+        $sy = $sy - $sh;
         $this->canvas->fit_image($img, $sx, $sy, 'boxsize={' . "$sw $sh" . '} fitmethod=entire');
 
         unlink($image);
@@ -169,13 +162,13 @@ class SurfacePDFLib implements SurfaceInterface
     public function lineTo($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->lineto($x, $this->y($y));
+        $this->canvas->lineto($x, $y);
     }
 
     public function moveTo($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->moveto($x, $this->y($y));
+        $this->canvas->moveto($x, $y);
     }
 
     public function quadraticCurveTo($cpx, $cpy, $x, $y)
@@ -187,7 +180,7 @@ class SurfacePDFLib implements SurfaceInterface
     public function bezierCurveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->curveto($cp1x, $this->y($cp1y), $cp2x, $this->y($cp2y), $x, $this->y($y));
+        $this->canvas->curveto($cp1x, $cp1y, $cp2x, $cp2y, $x, $y);
     }
 
     public function arcTo($x1, $y1, $x2, $y2, $radius)
@@ -198,32 +191,32 @@ class SurfacePDFLib implements SurfaceInterface
     public function arc($x, $y, $radius, $startAngle, $endAngle, $anticlockwise = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->arc($x, $this->y($y), $radius, $startAngle, $endAngle);
+        $this->canvas->arc($x, $y, $radius, $startAngle, $endAngle);
     }
 
     public function circle($x, $y, $radius)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->circle($x, $this->y($y), $radius);
+        $this->canvas->circle($x, $y, $radius);
     }
 
     public function ellipse($x, $y, $radiusX, $radiusY, $rotation, $startAngle, $endAngle, $anticlockwise)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->ellipse($x, $this->y($y), $radiusX, $radiusY);
+        $this->canvas->ellipse($x, $y, $radiusX, $radiusY);
     }
 
     public function fillRect($x, $y, $w, $h)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->rect($x, $this->y($y), $w, $h);
+        $this->rect($x, $y, $w, $h);
         $this->fill();
     }
 
     public function rect($x, $y, $w, $h)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->rect($x, $this->y($y), $w, -$h);
+        $this->canvas->rect($x, $y, $w, $h);
     }
 
     public function fill()
@@ -235,7 +228,7 @@ class SurfacePDFLib implements SurfaceInterface
     public function strokeRect($x, $y, $w, $h)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->rect($x, $this->y($y), $w, $h);
+        $this->rect($x, $y, $w, $h);
         $this->stroke();
     }
 
@@ -263,7 +256,6 @@ class SurfacePDFLib implements SurfaceInterface
     public function getStyle()
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-
         return $this->style;
     }
 
@@ -274,12 +266,26 @@ class SurfacePDFLib implements SurfaceInterface
         $this->style = $style;
         $canvas = $this->canvas;
 
-        if ($stroke = $style->stroke) {
-            $canvas->setcolor("stroke", "rgb", $stroke[0] / 255, $stroke[1] / 255, $stroke[2] / 255, null);
+        if (($stroke = $style->stroke) && $stroke !== "none") {
+            $canvas->setcolor(
+                "stroke",
+                "rgb",
+                $stroke[0] / 255,
+                $stroke[1] / 255,
+                $stroke[2] / 255,
+                null
+            );
         }
 
-        if ($fill = $style->fill) {
-            $canvas->setcolor("fill", "rgb", $fill[0] / 255, $fill[1] / 255, $fill[2] / 255, null);
+        if (($fill = $style->fill) && $fill !== "none") {
+            $canvas->setcolor(
+                "fill",
+                "rgb",
+                $fill[0] / 255,
+                $fill[1] / 255,
+                $fill[2] / 255,
+                null
+            );
         }
 
         $opts = array();
@@ -298,7 +304,9 @@ class SurfacePDFLib implements SurfaceInterface
         $canvas->set_graphics_option(implode(" ", $opts));
 
         $font = $this->getFont($style->fontFamily, $style->fontStyle);
-        $canvas->setfont($font, $style->fontSize);
+        if ($font) {
+            $canvas->setfont($font, $style->fontSize);
+        }
     }
 
     private function getFont($family, $style)
@@ -307,8 +315,11 @@ class SurfacePDFLib implements SurfaceInterface
             "serif"      => "Times",
             "sans-serif" => "Helvetica",
             "fantasy"    => "Symbol",
-            "cursive"    => "serif",
-            "monospance" => "Courier",
+            "cursive"    => "Times",
+            "monospace"  => "Courier",
+
+            "arial"      => "Helvetica",
+            "verdana"    => "Helvetica",
         );
 
         $family = strtolower($family);

@@ -12,26 +12,19 @@ use Svg\Style;
 
 class Group extends AbstractTag
 {
-    public function start($attribs)
+    protected function before($attribs)
     {
         $surface = $this->document->getSurface();
 
+        $surface->save();
+
         $style = new Style();
-
-        $group = $this->getParentGroup();
-        if ($group) {
-            $style->fromGroupAttributes($group->attributes);
-        }
-
+        $style->inherit($this);
         $style->fromAttributes($attribs);
+
+        $this->setStyle($style);
+
         $surface->setStyle($style);
-    }
-
-    protected function before($attribs)
-    {
-        parent::before($attribs);
-
-        $this->document->getSurface()->save();
 
         $this->applyTransform($attribs);
     }

@@ -28,11 +28,15 @@ class Image extends AbstractTag
 
     public function start($attribs)
     {
+        $document = $this->document;
+        $height = $this->document->getHeight();
+        $this->y = $height;
+
         if (isset($attribs['x'])) {
             $this->x = $attribs['x'];
         }
         if (isset($attribs['y'])) {
-            $this->y = $attribs['y'];
+            $this->y = $height - $attribs['y'];
         }
 
         if (isset($attribs['width'])) {
@@ -46,7 +50,9 @@ class Image extends AbstractTag
             $this->href = $attribs['xlink:href'];
         }
 
-        $this->document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
+        $document->getSurface()->transform(1, 0, 0, -1, 0, $height);
+
+        $document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
     }
 
     protected function after()

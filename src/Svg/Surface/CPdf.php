@@ -3116,12 +3116,9 @@ EOT;
         $y = $this->currentPageSize["height"] - $y;
 
         $tm = array(
-            $s_x,
-            0,
-            0,
-            $s_y,
-            $x * (1 - $s_x),
-            $y * (1 - $s_y)
+            $s_x,            0,
+            0,               $s_y,
+            $x * (1 - $s_x), $y * (1 - $s_y)
         );
 
         $this->transform($tm);
@@ -3136,12 +3133,9 @@ EOT;
     function translate($t_x, $t_y)
     {
         $tm = array(
-            1,
-            0,
-            0,
-            1,
-            $t_x,
-            -$t_y
+            1,    0,
+            0,    1,
+            $t_x, -$t_y
         );
 
         $this->transform($tm);
@@ -3163,12 +3157,9 @@ EOT;
         $sin_a = sin($a);
 
         $tm = array(
-            $cos_a,
-            -$sin_a,
-            $sin_a,
-            $cos_a,
-            $x - $sin_a * $y - $cos_a * $x,
-            $y - $cos_a * $y + $sin_a * $x,
+            $cos_a,                         -$sin_a,
+            $sin_a,                         $cos_a,
+            $x - $sin_a * $y - $cos_a * $x, $y - $cos_a * $y + $sin_a * $x,
         );
 
         $this->transform($tm);
@@ -3190,12 +3181,9 @@ EOT;
         $tan_y = tan(deg2rad($angle_y));
 
         $tm = array(
-            1,
-            -$tan_y,
-            -$tan_x,
-            1,
-            $tan_x * $y,
-            $tan_y * $x,
+            1,           -$tan_y,
+            -$tan_x,     1,
+            $tan_x * $y, $tan_y * $x,
         );
 
         $this->transform($tm);

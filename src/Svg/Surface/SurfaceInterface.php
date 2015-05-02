@@ -30,8 +30,6 @@ interface SurfaceInterface
 
     public function transform($a, $b, $c, $d, $e, $f);
 
-    public function setTransform($a, $b, $c, $d, $e, $f);
-
     // path ends
     public function beginPath();
 
