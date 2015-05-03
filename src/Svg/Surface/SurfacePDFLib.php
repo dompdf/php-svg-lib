@@ -9,6 +9,7 @@
 namespace Svg\Surface;
 
 use Svg\Style;
+use Svg\Document;
 
 class SurfacePDFLib implements SurfaceInterface
 {
@@ -22,31 +23,41 @@ class SurfacePDFLib implements SurfaceInterface
     /** @var Style */
     private $style;
 
-    public function __construct($w, $h)
+    public function __construct(Document $doc, $canvas = null)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
 
-        $this->width = $w;
-        $this->height = $h;
+        $dimensions = $doc->getDimensions();
+        $w = $dimensions["width"];
+        $h = $dimensions["height"];
 
-        $canvas = new \PDFlib();
+        if (!$canvas) {
+            $canvas = new \PDFlib();
 
-        /* all strings are expected as utf8 */
-        $canvas->set_option("stringformat=utf8");
-        $canvas->set_option("errorpolicy=return");
+            /* all strings are expected as utf8 */
+            $canvas->set_option("stringformat=utf8");
+            $canvas->set_option("errorpolicy=return");
 
-        /*  open new PDF file; insert a file name to create the PDF on disk */
-        if ($canvas->begin_document("", "") == 0) {
-            die("Error: " . $canvas->get_errmsg());
+            /*  open new PDF file; insert a file name to create the PDF on disk */
+            if ($canvas->begin_document("", "") == 0) {
+                die("Error: " . $canvas->get_errmsg());
+            }
+            $canvas->set_info("Creator", "PDFlib starter sample");
+            $canvas->set_info("Title", "starter_graphics");
+
+            $canvas->begin_page_ext($w, $h, "");
         }
-        $canvas->set_info("Creator", "PDFlib starter sample");
-        $canvas->set_info("Title", "starter_graphics");
-
-        $canvas->begin_page_ext($this->width, $this->height, "");
 
         // Flip PDF coordinate system so that the origin is in
         // the top left rather than the bottom left
-        $canvas->setmatrix(1, 0, 0, -1, 0, $h);
+        $canvas->setmatrix(
+            1, 0,
+            0, -1,
+            0, $h
+        );
+
+        $this->width  = $w;
+        $this->height = $h;
 
         $this->canvas = $canvas;
     }
@@ -174,7 +185,9 @@ class SurfacePDFLib implements SurfaceInterface
     public function quadraticCurveTo($cpx, $cpy, $x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        // TODO: Implement quadraticCurveTo() method.
+
+        // FIXME not accurate
+        $this->canvas->curveTo($cpx, $cpy, $cpx, $cpy, $x, $y);
     }
 
     public function bezierCurveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y)
@@ -213,10 +226,46 @@ class SurfacePDFLib implements SurfaceInterface
         $this->fill();
     }
 
-    public function rect($x, $y, $w, $h)
+    public function rect($x, $y, $w, $h, $rx = 0, $ry = 0)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->rect($x, $y, $w, $h);
+
+        $canvas = $this->canvas;
+
+        if ($rx <= 0.000001/* && $ry <= 0.000001*/) {
+            $canvas->rect($x, $y, $w, $h);
+
+            return;
+        }
+
+        /* Define a path for a rectangle with corners rounded by a given radius.
+         * Start from the lower left corner and proceed counterclockwise.
+         */
+        $canvas->moveto($x + $rx, $y);
+
+        /* Start of the arc segment in the lower right corner */
+        $canvas->lineto($x + $w - $rx, $y);
+
+        /* Arc segment in the lower right corner */
+        $canvas->arc($x + $w - $rx, $y + $rx, $rx, 270, 360);
+
+        /* Start of the arc segment in the upper right corner */
+        $canvas->lineto($x + $w, $y + $h - $rx );
+
+        /* Arc segment in the upper right corner */
+        $canvas->arc($x + $w - $rx, $y + $h - $rx, $rx, 0, 90);
+
+        /* Start of the arc segment in the upper left corner */
+        $canvas->lineto($x + $rx, $y + $h);
+
+        /* Arc segment in the upper left corner */
+        $canvas->arc($x + $rx, $y + $h - $rx, $rx, 90, 180);
+
+        /* Start of the arc segment in the lower left corner */
+        $canvas->lineto($x , $y + $rx);
+
+        /* Arc segment in the lower left corner */
+        $canvas->arc($x + $rx, $y + $rx, $rx, 180, 270);
     }
 
     public function fill()
@@ -286,6 +335,19 @@ class SurfacePDFLib implements SurfaceInterface
                 $fill[2] / 255,
                 null
             );
+        }
+
+        if ($fillRule = strtolower($style->fillRule)) {
+            $map = array(
+                "nonzero" => "winding",
+                "evenodd" => "evenodd",
+            );
+
+            if (isset($map[$fillRule])) {
+                $fillRule = $map[$fillRule];
+
+                $canvas->set_parameter("fillrule", $fillRule);
+            }
         }
 
         $opts = array();

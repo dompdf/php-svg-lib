@@ -32,22 +32,25 @@ class Shape extends AbstractTag
     protected function after()
     {
         $surface = $this->document->getSurface();
-        $style = $surface->getStyle();
 
-        $fill   = $style->fill   && $style->fill   !== "none";
-        $stroke = $style->stroke && $style->stroke !== "none";
+        if ($this->hasShape) {
+            $style = $surface->getStyle();
 
-        if ($fill) {
-            if ($stroke) {
-                $surface->fillStroke();
-            } else {
-                $surface->fill();
+            $fill   = $style->fill   && $style->fill   !== "none";
+            $stroke = $style->stroke && $style->stroke !== "none";
+
+            if ($fill) {
+                if ($stroke) {
+                    $surface->fillStroke();
+                } else {
+                    $surface->fill();
+                }
+            } elseif ($stroke) {
+                $surface->stroke();
             }
-        } elseif ($stroke) {
-            $surface->stroke();
-        }
-        else {
-            $surface->endPath();
+            else {
+                $surface->endPath();
+            }
         }
 
         $surface->restore();

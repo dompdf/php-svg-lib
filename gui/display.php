@@ -19,10 +19,12 @@ ob_start();
 $doc = new \Svg\Document();
 $doc->loadFile($file);
 
-$surface = new \Svg\Surface\SurfaceCpdf(600, 600);
+$surface = new \Svg\Surface\SurfaceCpdf($doc);
+//$surface = new \Svg\Surface\SurfacePDFLib($doc);
+
 $doc->render($surface);
 
-$pdf = $doc->getSurface()->out();
+$pdf = $surface->out();
 
 $out = ob_get_clean();
 

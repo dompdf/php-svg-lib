@@ -21,16 +21,22 @@ abstract class AbstractTag
 
     protected $attributes;
 
+    protected $hasShape = true;
+
     public function __construct(Document $document)
     {
         $this->document = $document;
+    }
+
+    protected function getDocument(){
+        return $this->document;
     }
 
     /**
      * @return Group|null
      */
     public function getParentGroup() {
-        $stack = $this->document->getStack();
+        $stack = $this->getDocument()->getStack();
         for ($i = count($stack)-2; $i >= 0; $i--) {
             $tag = $stack[$i];
 
@@ -122,7 +128,7 @@ abstract class AbstractTag
                         break;
 
                     case "translate":
-                        $surface->translate($t[1], isset($t[2]) ? $t[2] : $t[1]);
+                        $surface->translate($t[1], isset($t[2]) ? $t[2] : 0);
                         break;
 
                     case "scale":

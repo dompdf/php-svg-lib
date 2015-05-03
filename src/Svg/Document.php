@@ -38,19 +38,41 @@ class Document extends AbstractTag
     protected $pathBBox;
     protected $viewBox;
 
+    /** @var resource */
+    protected $parser;
+
     /** @var SurfaceInterface */
     protected $surface;
 
     /** @var AbstractTag[] */
     protected $stack = array();
 
+    /** @var AbstractTag[] */
+    protected $defs = array();
+
     public function loadFile($filename)
     {
         $this->filename = $filename;
     }
 
+    protected function initParser() {
+        $parser = xml_parser_create("utf-8");
+        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
+        xml_set_element_handler(
+            $parser,
+            array($this, "_tagStart"),
+            array($this, "_tagEnd")
+        );
+        xml_set_character_data_handler(
+            $parser,
+            array($this, "_charData")
+        );
+
+        return $this->parser = $parser;
+    }
+
     public function __construct() {
-        $this->setStyle(new DefaultStyle());
+
     }
 
     /**
@@ -66,27 +88,109 @@ class Document extends AbstractTag
         return $this->stack;
     }
 
+    public function getWidth()
+    {
+        return $this->width;
+    }
+
     public function getHeight()
     {
         return $this->height;
     }
 
-    public function render(SurfaceInterface $surface)
-    {
-        $this->surface = $surface;
+    public function getDimensions() {
+        $rootAttributes = null;
 
-        $this->inDefs = false;
         $parser = xml_parser_create("utf-8");
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
         xml_set_element_handler(
             $parser,
-            array($this, "_tagStart"),
-            array($this, "_tagEnd")
+            function ($parser, $name, $attributes) use (&$rootAttributes) {
+                if ($name === "svg" && $rootAttributes === null) {
+                    $rootAttributes = $attributes;
+                }
+            },
+            function ($parser, $name) {}
         );
-        xml_set_character_data_handler(
-            $parser,
-            array($this, "_charData")
+
+        $fp = fopen($this->filename, "r");
+        while ($line = fread($fp, 8192)) {
+            xml_parse($parser, $line, false);
+
+            if ($rootAttributes !== null) {
+                break;
+            }
+        }
+
+        xml_parser_free($parser);
+
+        return $this->handleSizeAttributes($rootAttributes);
+    }
+
+    public function handleSizeAttributes($attributes){
+        if ($this->width === null) {
+            if (isset($attributes["width"])) {
+                $width  = (int)$attributes["width"];
+                $this->width  = $width;
+            }
+
+            if (isset($attributes["height"])) {
+                $height = (int)$attributes["height"];
+                $this->height = $height;
+            }
+
+            if (isset($attributes['viewBox'])) {
+                $viewBox = preg_split('/[\s,]+/is', trim($attributes['viewBox']));
+                if (count($viewBox) == 4) {
+                    $this->x = $viewBox[0];
+                    $this->y = $viewBox[1];
+
+                    if (!$this->width) {
+                        $this->width = $viewBox[2];
+                    }
+                    if (!$this->height) {
+                        $this->height = $viewBox[3];
+                    }
+                }
+            }
+        }
+
+        return array(
+            0        => $this->width,
+            1        => $this->height,
+
+            "width"  => $this->width,
+            "height" => $this->height,
         );
+    }
+
+    protected function getDocument(){
+        return $this;
+    }
+
+    protected function before($attribs)
+    {
+        $surface = $this->getSurface();
+
+        $style = new DefaultStyle();
+        $style->inherit($this);
+        $style->fromAttributes($attribs);
+
+        $this->setStyle($style);
+
+        $surface->setStyle($style);
+    }
+
+    public function render(SurfaceInterface $surface)
+    {
+        $this->inDefs = false;
+        $this->surface = $surface;
+
+        $parser = $this->initParser();
+
+        if ($this->x || $this->y) {
+            $surface->translate(-$this->x, -$this->y);
+        }
 
         $fp = fopen($this->filename, "r");
         while ($line = fread($fp, 8192)) {
@@ -94,21 +198,15 @@ class Document extends AbstractTag
         }
 
         xml_parse($parser, "", true);
+
+        xml_parser_free($parser);
     }
 
     protected function svgOffset($attributes)
     {
         $this->attributes = $attributes;
 
-        if (isset($attributes['viewBox'])) {
-            $viewBox = preg_split('/[\s,]+/is', trim($attributes['viewBox']));
-            if (count($viewBox) == 4) {
-                $this->x = $viewBox[0];
-                $this->y = $viewBox[1];
-                $this->width = $viewBox[2];
-                $this->height = $viewBox[3];
-            }
-        }
+        $this->handleSizeAttributes($attributes);
     }
 
     private function _tagStart($parser, $name, $attributes)
@@ -186,8 +284,15 @@ class Document extends AbstractTag
         }
 
         if ($tag) {
-            $this->stack[] = $tag;
-            $tag->handle($attributes);
+            if (!$this->inDefs) {
+                $this->stack[] = $tag;
+                $tag->handle($attributes);
+            }
+            else {
+                if (isset($attributes["id"])) {
+                    $this->defs[$attributes["id"]] = $tag;
+                }
+            }
         } else {
             echo "Unknown: '$name'\n";
         }
@@ -226,7 +331,9 @@ class Document extends AbstractTag
             case 'text':
             case 'g':
             case 'a':
-                $tag = array_pop($this->stack);
+                if (!$this->inDefs) {
+                    $tag = array_pop($this->stack);
+                }
                 break;
         }
 

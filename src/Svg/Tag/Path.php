@@ -31,6 +31,12 @@ class Path extends Shape
 
     public function start($attribs)
     {
+        if (!isset($attribs['d'])) {
+            $this->hasShape = false;
+
+            return;
+        }
+
         $commands = array();
         preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([eE ,\-.\d]+)*/', $attribs['d'], $commands, PREG_SET_ORDER);
 

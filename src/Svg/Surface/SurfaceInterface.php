@@ -73,7 +73,7 @@ interface SurfaceInterface
     public function ellipse($x, $y, $radiusX, $radiusY, $rotation, $startAngle, $endAngle, $anticlockwise);
 
     // Rectangle
-    public function rect($x, $y, $w, $h);
+    public function rect($x, $y, $w, $h, $rx = 0, $ry = 0);
 
     public function fillRect($x, $y, $w, $h);
 

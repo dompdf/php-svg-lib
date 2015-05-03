@@ -8,8 +8,8 @@
 
 namespace Svg\Surface;
 
+use Svg\Document;
 use Svg\Style;
-use Svg\DefaultStyle;
 
 class SurfaceCpdf implements SurfaceInterface
 {
@@ -24,19 +24,28 @@ class SurfaceCpdf implements SurfaceInterface
     /** @var Style */
     private $style;
 
-    public function __construct($w, $h)
+    public function __construct(Document $doc, $canvas = null)
     {
-        if (self::DEBUG) {
-            echo __FUNCTION__ . "\n";
-        }
-        $this->width = $w;
-        $this->height = $h;
+        if (self::DEBUG) echo __FUNCTION__ . "\n";
 
-        $canvas = new CPdf(array(0, 0, $w, $h));
+        $dimensions = $doc->getDimensions();
+        $w = $dimensions["width"];
+        $h = $dimensions["height"];
+
+        if (!$canvas) {
+            $canvas = new CPdf(array(0, 0, $w, $h));
+        }
 
         // Flip PDF coordinate system so that the origin is in
         // the top left rather than the bottom left
-        $canvas->transform(array(1, 0, 0, -1, 0, $h));
+        $canvas->transform(array(
+            1,  0,
+            0, -1,
+            0, $h
+        ));
+
+        $this->width  = $w;
+        $this->height = $h;
 
         $this->canvas = $canvas;
     }
@@ -62,24 +71,40 @@ class SurfaceCpdf implements SurfaceInterface
     public function scale($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->scale($x, $y, 0, 0);
+
+        $this->transform($x, 0, 0, $y, 0, 0);
     }
 
     public function rotate($angle)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->rotate($angle, 0, 0);
+
+        $a = deg2rad($angle);
+        $cos_a = cos($a);
+        $sin_a = sin($a);
+
+        $this->transform(
+            $cos_a,                         $sin_a,
+            -$sin_a,                         $cos_a,
+            0, 0
+        );
     }
 
     public function translate($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->translate($x, $y);
+
+        $this->transform(
+            1,  0,
+            0,  1,
+            $x, $y
+        );
     }
 
     public function transform($a, $b, $c, $d, $e, $f)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
+
         $this->canvas->transform(array($a, $b, $c, $d, $e, $f));
     }
 
@@ -92,7 +117,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function closePath()
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->closepath();
+        $this->canvas->closePath();
     }
 
     public function fillStroke()
@@ -110,8 +135,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function fillText($text, $x, $y, $maxWidth = null)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->set_text_pos($x, $y);
-        $this->canvas->show($text);
+        $this->canvas->addText($x, $y, $this->style->fontSize, $text);
     }
 
     public function strokeText($text, $x, $y, $maxWidth = null)
@@ -204,7 +228,9 @@ class SurfaceCpdf implements SurfaceInterface
     public function quadraticCurveTo($cpx, $cpy, $x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        // TODO: Implement quadraticCurveTo() method.
+
+        // FIXME not accurate
+        $this->canvas->quadTo($cpx, $cpy, $x, $y);
     }
 
     public function bezierCurveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y)
@@ -221,7 +247,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function arc($x, $y, $radius, $startAngle, $endAngle, $anticlockwise = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->arc($x, $y, $radius, $startAngle, $endAngle);
+        $this->canvas->ellipse($x, $y, $radius, $radius, 0, 8, $startAngle, $endAngle, false, false, false, true);
     }
 
     public function circle($x, $y, $radius)
@@ -243,10 +269,46 @@ class SurfaceCpdf implements SurfaceInterface
         $this->fill();
     }
 
-    public function rect($x, $y, $w, $h)
+    public function rect($x, $y, $w, $h, $rx = 0, $ry = 0)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->rect($x, $y, $w, $h);
+
+        $canvas = $this->canvas;
+
+        if ($rx <= 0.000001/* && $ry <= 0.000001*/) {
+            $canvas->rect($x, $y, $w, $h);
+
+            return;
+        }
+
+        /* Define a path for a rectangle with corners rounded by a given radius.
+         * Start from the lower left corner and proceed counterclockwise.
+         */
+        $this->moveTo($x + $rx, $y);
+
+        /* Start of the arc segment in the lower right corner */
+        $this->lineTo($x + $w - $rx, $y);
+
+        /* Arc segment in the lower right corner */
+        $this->arc($x + $w - $rx, $y + $rx, $rx, 270, 360);
+
+        /* Start of the arc segment in the upper right corner */
+        $this->lineTo($x + $w, $y + $h - $rx );
+
+        /* Arc segment in the upper right corner */
+        $this->arc($x + $w - $rx, $y + $h - $rx, $rx, 0, 90);
+
+        /* Start of the arc segment in the upper left corner */
+        $this->lineTo($x + $rx, $y + $h);
+
+        /* Arc segment in the upper left corner */
+        $this->arc($x + $rx, $y + $h - $rx, $rx, 90, 180);
+
+        /* Start of the arc segment in the lower left corner */
+        $this->lineTo($x , $y + $rx);
+
+        /* Arc segment in the lower left corner */
+        $this->arc($x + $rx, $y + $rx, $rx, 180, 270);
     }
 
     public function fill()
@@ -286,7 +348,6 @@ class SurfaceCpdf implements SurfaceInterface
     public function getStyle()
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-
         return $this->style;
     }
 
@@ -305,6 +366,19 @@ class SurfaceCpdf implements SurfaceInterface
             $canvas->setColor(array($fill[0]/255, $fill[1]/255, $fill[2]/255), true);
         }
 
+        if ($fillRule = strtolower($style->fillRule)) {
+            $map = array(
+                "nonzero" => "winding",
+                "evenodd" => "evenodd",
+            );
+
+            /*if (isset($map[$fillRule])) {
+                $fillRule = $map[$fillRule];
+
+                $canvas->set_parameter("fillrule", $fillRule);
+            }*/
+        }
+
         $canvas->setLineStyle(
             $style->strokeWidth,
             $style->strokeLinecap,
@@ -321,8 +395,11 @@ class SurfaceCpdf implements SurfaceInterface
             "serif"      => "Times",
             "sans-serif" => "Helvetica",
             "fantasy"    => "Symbol",
-            "cursive"    => "serif",
-            "monospance" => "Courier",
+            "cursive"    => "Times",
+            "monospace"  => "Courier",
+
+            "arial"      => "Helvetica",
+            "verdana"    => "Helvetica",
         );
 
         $family = strtolower($family);
