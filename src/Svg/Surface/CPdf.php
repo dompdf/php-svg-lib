@@ -95,6 +95,11 @@ class CPdf
     public $currentColor = null;
 
     /**
+     * @var string Fill rule (nonzero or evenodd)
+     */
+    public $fillRule = "nonzero";
+
+    /**
      * @var array Current color for stroke operations (lines etc.)
      */
     public $currentStrokeColor = null;
@@ -2754,6 +2759,18 @@ EOT;
     }
 
     /**
+     * sets the color for fill operations
+     */
+    function setFillRule($fillRule)
+    {
+        if (!in_array($fillRule, array("nonzero", "evenodd"))) {
+            return;
+        }
+
+        $this->fillRule = $fillRule;
+    }
+
+    /**
      * sets the color for stroke operations
      */
     function setStrokeColor($color, $force = false)
@@ -3088,12 +3105,12 @@ EOT;
 
     function fill()
     {
-        $this->addContent("\nf");
+        $this->addContent("\nf".($this->fillRule === "evenodd" ? "*" : ""));
     }
 
     function fillStroke()
     {
-        $this->addContent("\nb");
+        $this->addContent("\nb".($this->fillRule === "evenodd" ? "*" : ""));
     }
 
     /**

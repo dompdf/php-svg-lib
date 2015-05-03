@@ -365,6 +365,29 @@ class SurfacePDFLib implements SurfaceInterface
 
         $canvas->set_graphics_option(implode(" ", $opts));
 
+        $opts = array();
+        $opacity = $style->opacity;
+        if ($opacity !== null && $opacity < 1.0) {
+            $opts[] = "opacityfill=$opacity";
+            $opts[] = "opacitystroke=$opacity";
+        }
+        else {
+            $fillOpacity = $style->fillOpacity;
+            if ($fillOpacity !== null && $fillOpacity < 1.0) {
+                $opts[] = "opacityfill=$fillOpacity";
+            }
+
+            $strokeOpacity = $style->strokeOpacity;
+            if ($strokeOpacity !== null && $strokeOpacity < 1.0) {
+                $opts[] = "opacitystroke=$strokeOpacity";
+            }
+        }
+
+        if (count($opts)) {
+            $gs = $canvas->create_gstate(implode(" ", $opts));
+            $canvas->set_gstate($gs);
+        }
+
         $font = $this->getFont($style->fontFamily, $style->fontStyle);
         if ($font) {
             $canvas->setfont($font, $style->fontSize);

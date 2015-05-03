@@ -367,16 +367,29 @@ class SurfaceCpdf implements SurfaceInterface
         }
 
         if ($fillRule = strtolower($style->fillRule)) {
-            $map = array(
-                "nonzero" => "winding",
-                "evenodd" => "evenodd",
-            );
+            $canvas->setFillRule($fillRule);
+        }
 
-            /*if (isset($map[$fillRule])) {
-                $fillRule = $map[$fillRule];
+        $opacity = $style->opacity;
+        if ($opacity !== null && $opacity < 1.0) {
+            $canvas->setLineTransparency("Normal", $opacity);
+            $canvas->currentLineTransparency = null;
 
-                $canvas->set_parameter("fillrule", $fillRule);
-            }*/
+            $canvas->setFillTransparency("Normal", $opacity);
+            $canvas->currentFillTransparency = null;
+        }
+        else {
+            $fillOpacity = $style->fillOpacity;
+            if ($fillOpacity !== null && $fillOpacity < 1.0) {
+                $canvas->setFillTransparency("Normal", $fillOpacity);
+                $canvas->currentFillTransparency = null;
+            }
+
+            $strokeOpacity = $style->strokeOpacity;
+            if ($strokeOpacity !== null && $strokeOpacity < 1.0) {
+                $canvas->setLineTransparency("Normal", $strokeOpacity);
+                $canvas->currentLineTransparency = null;
+            }
         }
 
         $canvas->setLineStyle(

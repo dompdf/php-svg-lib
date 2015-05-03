@@ -107,6 +107,8 @@ class Document extends AbstractTag
             $parser,
             function ($parser, $name, $attributes) use (&$rootAttributes) {
                 if ($name === "svg" && $rootAttributes === null) {
+                    $attributes = array_change_key_case($attributes, CASE_LOWER);
+
                     $rootAttributes = $attributes;
                 }
             },
@@ -139,8 +141,8 @@ class Document extends AbstractTag
                 $this->height = $height;
             }
 
-            if (isset($attributes['viewBox'])) {
-                $viewBox = preg_split('/[\s,]+/is', trim($attributes['viewBox']));
+            if (isset($attributes['viewbox'])) {
+                $viewBox = preg_split('/[\s,]+/is', trim($attributes['viewbox']));
                 if (count($viewBox) == 4) {
                     $this->x = $viewBox[0];
                     $this->y = $viewBox[1];
@@ -216,14 +218,21 @@ class Document extends AbstractTag
 
         $tag = null;
 
+        $attributes = array_change_key_case($attributes, CASE_LOWER);
+
         switch (strtolower($name)) {
             case 'defs':
                 $this->inDefs = true;
                 return;
 
             case 'svg':
-                $tag = $this;
-                $this->svgOffset($attributes);
+                if (count($this->attributes)) {
+                    $tag = new Group($this);
+                }
+                else {
+                    $tag = $this;
+                    $this->svgOffset($attributes);
+                }
                 break;
 
             case 'path':

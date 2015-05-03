@@ -44,17 +44,21 @@ class Style
     {
         return array(
             'color'             => array('color', self::TYPE_COLOR),
+            'opacity'           => array('opacity', self::TYPE_NUMBER),
+
             'fill'              => array('fill', self::TYPE_COLOR),
             'fill-opacity'      => array('fillOpacity', self::TYPE_NUMBER),
             'fill-rule'         => array('fillRule', self::TYPE_NAME),
+
             'stroke'            => array('stroke', self::TYPE_COLOR),
             'stroke-dasharray'  => array('strokeDasharray', self::TYPE_NAME),
             'stroke-dashoffset' => array('strokeDashoffset', self::TYPE_NUMBER),
             'stroke-linecap'    => array('strokeLinecap', self::TYPE_NAME),
             'stroke-linejoin'   => array('strokeLinejoin', self::TYPE_NAME),
             'stroke-miterlimit' => array('strokeMiterlimit', self::TYPE_NUMBER),
-            'stroke-opacity'    => array('strokeOpacity', self::TYPE_COLOR),
+            'stroke-opacity'    => array('strokeOpacity', self::TYPE_NUMBER),
             'stroke-width'      => array('strokeWidth', self::TYPE_NUMBER),
+
             'font-family'       => array('fontFamily', self::TYPE_NAME),
             'font-size'         => array('fontSize', self::TYPE_NUMBER),
             'font-weight'       => array('fontWeight', self::TYPE_NUMBER),
@@ -103,7 +107,7 @@ class Style
                         break;
 
                     case self::TYPE_NUMBER:
-                        $value = (float)$styles[$from];
+                        $value = ($styles[$from] === null) ? null : (float)$styles[$from];
                         break;
 
                     default:
@@ -120,6 +124,15 @@ class Style
     static function parseColor($color)
     {
         $color = strtolower(trim($color));
+
+        $parts = preg_split('/\s+/', $color, 2);
+
+        if (count($parts) == 2) {
+            $color = $parts[1];
+        }
+        else {
+            $color = $parts[0];
+        }
 
         if ($color === "none") {
             return "none";
