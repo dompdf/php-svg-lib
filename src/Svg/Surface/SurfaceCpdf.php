@@ -149,9 +149,22 @@ class SurfaceCpdf implements SurfaceInterface
         if (self::DEBUG) echo __FUNCTION__ . "\n";
 
         if (strpos($image, "data:") === 0) {
-            $data = substr($image, strpos($image, ";") + 1);
-            if (strpos($data, "base64") === 0) {
-                $data = base64_decode(substr($data, 7));
+            $parts = explode(',', $image, 2);
+
+            $data = $parts[1];
+            $base64 = false;
+
+            $token = strtok($parts[0], ';');
+            while ($token !== false) {
+                if ($token == 'base64') {
+                    $base64 = true;
+                }
+
+                $token = strtok(';');
+            }
+
+            if ($base64) {
+                $data = base64_decode($data);
             }
         }
         else {
@@ -281,6 +294,9 @@ class SurfaceCpdf implements SurfaceInterface
             return;
         }
 
+        $rx = min($rx, $w / 2);
+        $rx = min($rx, $h / 2);
+
         /* Define a path for a rectangle with corners rounded by a given radius.
          * Start from the lower left corner and proceed counterclockwise.
          */
@@ -392,14 +408,19 @@ class SurfaceCpdf implements SurfaceInterface
             }
         }
 
+        $dashArray = null;
+        if ($style->strokeDasharray) {
+            $dashArray = preg_split('/\s*,\s*/', $style->strokeDasharray);
+        }
+
         $canvas->setLineStyle(
             $style->strokeWidth,
             $style->strokeLinecap,
-            $style->strokeLinejoin
+            $style->strokeLinejoin,
+            $dashArray
         );
 
-        //$font = $this->getFont($style->fontFamily, $style->fontStyle);
-        //$canvas->setfont($font, $style->fontSize);
+        $this->getFont($style->fontFamily, $style->fontStyle);
     }
 
     private function getFont($family, $style)
@@ -420,6 +441,6 @@ class SurfaceCpdf implements SurfaceInterface
             $family = $map[$family];
         }
 
-        //return $this->canvas->load_font($family, "unicode", "fontstyle=$style");
+        $this->canvas->selectFont("$family.afm");
     }
 }
