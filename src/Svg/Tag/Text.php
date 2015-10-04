@@ -14,17 +14,17 @@ class Text extends Shape
     protected $y = 0;
     protected $text = "";
 
-    public function start($attribs)
+    public function start($attributes)
     {
         $document = $this->document;
         $height = $this->document->getHeight();
         $this->y = $height;
 
-        if (isset($attribs['x'])) {
-            $this->x = $attribs['x'];
+        if (isset($attributes['x'])) {
+            $this->x = $attributes['x'];
         }
-        if (isset($attribs['y'])) {
-            $this->y = $height - $attribs['y'];
+        if (isset($attributes['y'])) {
+            $this->y = $height - $attributes['y'];
         }
 
         $document->getSurface()->transform(1, 0, 0, -1, 0, $height);
@@ -37,11 +37,11 @@ class Text extends Shape
         $y = $this->y;
 
         if ($surface->getStyle()->textAnchor == "middle") {
-            $width = $surface->measureText($this->text);
+            $width = $surface->measureText($this->getText());
             $x -= $width / 2;
         }
 
-        $surface->fillText($this->text, $x, $y);
+        $surface->fillText($this->getText(), $x, $y);
     }
 
     protected function after()
@@ -52,5 +52,10 @@ class Text extends Shape
     public function appendText($text)
     {
         $this->text .= $text;
+    }
+
+    public function getText()
+    {
+        return trim($this->text);
     }
 } 

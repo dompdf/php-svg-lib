@@ -10,10 +10,10 @@ namespace Svg\Tag;
 
 class Polygon extends Shape
 {
-    public function start($attribs)
+    public function start($attributes)
     {
         $tmp = array();
-        preg_match_all('/([\-]*[0-9\.]+)/', $attribs['points'], $tmp);
+        preg_match_all('/([\-]*[0-9\.]+)/', $attributes['points'], $tmp);
 
         $points = $tmp[0];
         $count = count($points);

@@ -10,7 +10,7 @@ namespace Svg\Tag;
 
 use Svg\Style;
 
-class Group extends AbstractTag
+class ClipPath extends AbstractTag
 {
     protected function before($attributes)
     {

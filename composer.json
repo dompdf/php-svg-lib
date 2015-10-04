@@ -14,5 +14,8 @@
     "psr-0": {
       "Svg\\": "src/"
     }
+  },
+  "require": {
+    "sabberworm/php-css-parser": "6.0.*"
   }
 }

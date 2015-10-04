@@ -6,12 +6,11 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-namespace Svg\Tag;
+namespace Svg\Gradient;
 
-class RadialGradient extends AbstractTag
+class Stop
 {
-    public function start($attributes)
-    {
-
-    }
-} 
+    public $offset;
+    public $color;
+    public $opacity = 1.0;
+}

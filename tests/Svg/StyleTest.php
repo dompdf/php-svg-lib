@@ -40,7 +40,7 @@ class StyleTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(1,  Style::convertSize(1));
         $this->assertEquals(10, Style::convertSize("10px")); // FIXME
         $this->assertEquals(10, Style::convertSize("10pt"));
-        $this->assertEquals(8,  Style::convertSize("80%", 72, 10));
+        $this->assertEquals(8,  Style::convertSize("80%", 10, 72));
     }
 }
  
