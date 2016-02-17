@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
@@ -36,9 +36,13 @@ class Text extends Shape
         $x = $this->x;
         $y = $this->y;
 
+        $width = $surface->measureText($this->text);
+
         if ($surface->getStyle()->textAnchor == "middle") {
-            $width = $surface->measureText($this->getText());
             $x -= $width / 2;
+        }
+        if ($surface->getStyle()->textAnchor == "end") {
+            $x -= $width;
         }
 
         $surface->fillText($this->getText(), $x, $y);
