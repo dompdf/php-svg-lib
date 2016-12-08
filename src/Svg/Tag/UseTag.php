@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien Mï¿½nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
@@ -41,6 +41,10 @@ class UseTag extends AbstractTag
         $link = $attributes["xlink:href"];
         $this->reference = $document->getDef($link);
 
+        if ($this->reference) {
+            $this->reference->before($attributes);
+        }
+
         $surface = $document->getSurface();
         $surface->save();
 
@@ -49,6 +53,10 @@ class UseTag extends AbstractTag
 
     protected function after() {
         parent::after();
+
+        if ($this->reference) {
+            $this->reference->after();
+        }
 
         $this->getDocument()->getSurface()->restore();
     }
