@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien Mï¿½nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
@@ -15,7 +15,7 @@ class SurfaceCpdf implements SurfaceInterface
 {
     const DEBUG = false;
 
-    /** @var Cpdf */
+    /** @var \CPdf\CPdf */
     private $canvas;
 
     private $width;
@@ -33,7 +33,9 @@ class SurfaceCpdf implements SurfaceInterface
         $h = $dimensions["height"];
 
         if (!$canvas) {
-            $canvas = new CPdf(array(0, 0, $w, $h));
+            $canvas = new \CPdf\CPdf(array(0, 0, $w, $h));
+            $refl = new \ReflectionClass($canvas);
+            $canvas->fontcache = dirname($refl->getFileName())."/../../fonts/";
         }
 
         // Flip PDF coordinate system so that the origin is in
@@ -356,7 +358,7 @@ class SurfaceCpdf implements SurfaceInterface
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
         $style = $this->getStyle();
-        $this->getFont($style->fontFamily, $style->fontStyle);
+        $this->getFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
 
         return $this->canvas->getTextWidth($this->getStyle()->fontSize, $text);
     }
@@ -420,10 +422,10 @@ class SurfaceCpdf implements SurfaceInterface
             $dashArray
         );
 
-        $this->getFont($style->fontFamily, $style->fontStyle);
+        $this->getFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
     }
 
-    private function getFont($family, $style)
+    private function getFont($family, $style, $weight)
     {
         $map = array(
             "serif"      => "Times",
@@ -436,9 +438,49 @@ class SurfaceCpdf implements SurfaceInterface
             "verdana"    => "Helvetica",
         );
 
+        $styleMap = array(
+            'Helvetica' => array(
+                'b'  => 'Helvetica-Bold',
+                'i'  => 'Helvetica-Oblique',
+                'bi' => 'Helvetica-BoldOblique',
+                'ib' => 'Helvetica-BoldOblique'
+            ),
+            'Courier' => array(
+                'b'  => 'Courier-Bold',
+                'i'  => 'Courier-Oblique',
+                'bi' => 'Courier-BoldOblique',
+                'ib' => 'Courier-BoldOblique'
+            ),
+            'Times' => array(
+                'b'  => 'Times-Bold',
+                'i'  => 'Times-Italic',
+                'bi' => 'Times-BoldItalic',
+                'ib' => 'Times-BoldItalic'
+            ),
+        );
+
         $family = strtolower($family);
+        $style  = strtolower($style);
+        $weight = strtolower($weight);
+
         if (isset($map[$family])) {
             $family = $map[$family];
+        }
+
+        if (isset($styleMap[$family])) {
+            $key = "";
+
+            if ($weight === "bold" || $weight === "bolder" || (is_numeric($weight) && $weight >= 600)) {
+                $key .= "b";
+            }
+
+            if ($style === "italic" || $style === "oblique") {
+                $key .= "i";
+            }
+
+            if ($key && isset($styleMap[$family][$key])) {
+                $family = $styleMap[$family][$key];
+            }
         }
 
         $this->canvas->selectFont("$family.afm");
