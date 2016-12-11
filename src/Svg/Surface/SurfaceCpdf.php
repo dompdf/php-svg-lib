@@ -427,7 +427,6 @@ class SurfaceCpdf implements SurfaceInterface
 
     public function setFont($family, $style, $weight)
     {
-        var_dump("$family.$style.$weight");
         $map = array(
             "serif"      => "Times",
             "sans-serif" => "Helvetica",
