@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien Mï¿½nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
@@ -299,5 +299,10 @@ class SurfaceGmagick implements SurfaceInterface
         }
 
         return $this->canvas->load_font($family, "unicode", "fontstyle=$style");
+    }
+
+    public function setFont($family, $style, $weight)
+    {
+        // TODO: Implement setFont() method.
     }
 }

@@ -35,8 +35,10 @@ class Text extends Shape
         $surface = $this->document->getSurface();
         $x = $this->x;
         $y = $this->y;
+        $style = $surface->getStyle();
+        $surface->setFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
 
-        switch ($surface->getStyle()->textAnchor) {
+        switch ($style->textAnchor) {
             case "middle":
                 $width = $surface->measureText($this->text);
                 $x -= $width / 2;

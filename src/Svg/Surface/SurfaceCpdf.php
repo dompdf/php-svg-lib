@@ -35,7 +35,7 @@ class SurfaceCpdf implements SurfaceInterface
         if (!$canvas) {
             $canvas = new \CPdf\CPdf(array(0, 0, $w, $h));
             $refl = new \ReflectionClass($canvas);
-            $canvas->fontcache = dirname($refl->getFileName())."/../../fonts/";
+            $canvas->fontcache = realpath(dirname($refl->getFileName()) . "/../../fonts/")."/";
         }
 
         // Flip PDF coordinate system so that the origin is in
@@ -143,7 +143,7 @@ class SurfaceCpdf implements SurfaceInterface
     public function strokeText($text, $x, $y, $maxWidth = null)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        // TODO: Implement drawImage() method.
+        $this->canvas->addText($x, $y, $this->style->fontSize, $text);
     }
 
     public function drawImage($image, $sx, $sy, $sw = null, $sh = null, $dx = null, $dy = null, $dw = null, $dh = null)
@@ -358,7 +358,7 @@ class SurfaceCpdf implements SurfaceInterface
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
         $style = $this->getStyle();
-        $this->getFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
+        $this->setFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
 
         return $this->canvas->getTextWidth($this->getStyle()->fontSize, $text);
     }
@@ -422,11 +422,12 @@ class SurfaceCpdf implements SurfaceInterface
             $dashArray
         );
 
-        $this->getFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
+        $this->setFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
     }
 
-    private function getFont($family, $style, $weight)
+    public function setFont($family, $style, $weight)
     {
+        var_dump("$family.$style.$weight");
         $map = array(
             "serif"      => "Times",
             "sans-serif" => "Helvetica",
@@ -443,19 +444,17 @@ class SurfaceCpdf implements SurfaceInterface
                 'b'  => 'Helvetica-Bold',
                 'i'  => 'Helvetica-Oblique',
                 'bi' => 'Helvetica-BoldOblique',
-                'ib' => 'Helvetica-BoldOblique'
             ),
             'Courier' => array(
                 'b'  => 'Courier-Bold',
                 'i'  => 'Courier-Oblique',
                 'bi' => 'Courier-BoldOblique',
-                'ib' => 'Courier-BoldOblique'
             ),
             'Times' => array(
+                ''   => 'Times-Roman',
                 'b'  => 'Times-Bold',
                 'i'  => 'Times-Italic',
                 'bi' => 'Times-BoldItalic',
-                'ib' => 'Times-BoldItalic'
             ),
         );
 
@@ -468,7 +467,7 @@ class SurfaceCpdf implements SurfaceInterface
         }
 
         if (isset($styleMap[$family])) {
-            $key = "";
+            $key = "b";
 
             if ($weight === "bold" || $weight === "bolder" || (is_numeric($weight) && $weight >= 600)) {
                 $key .= "b";
@@ -478,7 +477,7 @@ class SurfaceCpdf implements SurfaceInterface
                 $key .= "i";
             }
 
-            if ($key && isset($styleMap[$family][$key])) {
+            if (isset($styleMap[$family][$key])) {
                 $family = $styleMap[$family][$key];
             }
         }

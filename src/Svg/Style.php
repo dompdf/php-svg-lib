@@ -63,7 +63,7 @@ class Style
 
             'font-family'       => array('fontFamily', self::TYPE_NAME),
             'font-size'         => array('fontSize', self::TYPE_NUMBER),
-            'font-weight'       => array('fontWeight', self::TYPE_NUMBER),
+            'font-weight'       => array('fontWeight', self::TYPE_NAME),
             'font-style'        => array('fontStyle', self::TYPE_NAME),
             'text-anchor'       => array('textAnchor', self::TYPE_NAME),
         );
