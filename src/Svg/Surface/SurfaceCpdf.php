@@ -466,7 +466,7 @@ class SurfaceCpdf implements SurfaceInterface
         }
 
         if (isset($styleMap[$family])) {
-            $key = "b";
+            $key = "";
 
             if ($weight === "bold" || $weight === "bolder" || (is_numeric($weight) && $weight >= 600)) {
                 $key .= "b";
