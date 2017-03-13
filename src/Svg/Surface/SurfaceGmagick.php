@@ -256,11 +256,11 @@ class SurfaceGmagick implements SurfaceInterface
         $this->style = $style;
         $canvas = $this->canvas;
 
-        if ($stroke = $style->stroke) {
+        if ($style->stroke !== 'none' && $stroke = $style->stroke) {
             $canvas->setcolor("stroke", "rgb", $stroke[0] / 255, $stroke[1] / 255, $stroke[2] / 255, null);
         }
 
-        if ($fill = $style->fill) {
+        if ($style->fill != 'none' && $fill = $style->fill) {
            // $canvas->setcolor("fill", "rgb", $fill[0] / 255, $fill[1] / 255, $fill[2] / 255, null);
         }
 
