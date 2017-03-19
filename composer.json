@@ -16,6 +16,6 @@
     }
   },
   "require": {
-    "sabberworm/php-css-parser": "6.0.*"
+    "sabberworm/php-css-parser": "8.1.*"
   }
 }
