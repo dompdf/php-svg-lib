@@ -15,7 +15,7 @@ class SurfaceCpdf implements SurfaceInterface
 {
     const DEBUG = false;
 
-    /** @var \CPdf\CPdf */
+    /** @var \Svg\Surface\CPdf */
     private $canvas;
 
     private $width;
@@ -33,7 +33,7 @@ class SurfaceCpdf implements SurfaceInterface
         $h = $dimensions["height"];
 
         if (!$canvas) {
-            $canvas = new \CPdf\CPdf(array(0, 0, $w, $h));
+            $canvas = new \Svg\Surface\CPdf(array(0, 0, $w, $h));
             $refl = new \ReflectionClass($canvas);
             $canvas->fontcache = realpath(dirname($refl->getFileName()) . "/../../fonts/")."/";
         }
