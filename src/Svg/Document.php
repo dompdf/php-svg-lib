@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
@@ -256,7 +256,7 @@ class Document extends AbstractTag
                 return;
 
             case 'svg':
-                if (count($this->attributes)) {
+                if ($this->attributes instanceof \Countable && count($this->attributes)) {
                     $tag = new Group($this, $name);
                 }
                 else {
