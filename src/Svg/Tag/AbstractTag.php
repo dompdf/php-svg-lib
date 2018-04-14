@@ -21,7 +21,7 @@ abstract class AbstractTag
     /** @var Style */
     protected $style;
 
-    protected $attributes;
+    protected $attributes = array();
 
     protected $hasShape = true;
 
