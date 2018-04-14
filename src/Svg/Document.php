@@ -353,8 +353,6 @@ class Document extends AbstractTag
             $this->stack[] = $tag;
 
             $tag->handle($attributes);
-        } else {
-            echo "Unknown: '$name'\n";
         }
     }
 
