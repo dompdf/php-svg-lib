@@ -202,7 +202,7 @@ class SurfaceGmagick implements SurfaceInterface
         $this->fill();
     }
 
-    public function rect($x, $y, $w, $h)
+    public function rect($x, $y, $w, $h, $rx = 0, $ry = 0)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
         $this->canvas->rect($x, $y, $w, $h);
