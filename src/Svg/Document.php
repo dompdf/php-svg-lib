@@ -256,7 +256,7 @@ class Document extends AbstractTag
                 return;
 
             case 'svg':
-                if (count($this->attributes)) {
+                if ($this->attributes instanceof \Countable && count($this->attributes)) {
                     $tag = new Group($this, $name);
                 }
                 else {
