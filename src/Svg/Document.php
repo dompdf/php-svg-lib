@@ -40,6 +40,7 @@ class Document extends AbstractTag
     protected $subPathInit;
     protected $pathBBox;
     protected $viewBox;
+    protected $attributes = [];
 
     /** @var resource */
     protected $parser;
