@@ -9,8 +9,9 @@
 namespace Svg\Tests;
 
 use Svg\Style;
+use PHPUnit\Framework\TestCase;
 
-class StyleTest extends \PHPUnit\Framework\TestCase
+class StyleTest extends TestCase
 {
 
     public function test_parseColor()
