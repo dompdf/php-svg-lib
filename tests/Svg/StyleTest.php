@@ -8,8 +8,6 @@
 
 namespace Svg\Tests;
 
-include_once __DIR__ . "/../../src/autoload.php";
-
 use Svg\Style;
 
 class StyleTest extends \PHPUnit\Framework\TestCase
