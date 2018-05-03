@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
@@ -256,7 +256,7 @@ class Document extends AbstractTag
                 return;
 
             case 'svg':
-                if (count($this->attributes)) {
+                if (count($this->attributes ?? [])) {
                     $tag = new Group($this, $name);
                 }
                 else {
