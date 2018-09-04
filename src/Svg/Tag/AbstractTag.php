@@ -166,7 +166,13 @@ abstract class AbstractTag
                         break;
 
                     case "rotate":
-                        $surface->rotate($t[1]);
+                        if (isset($t[2]) || isset($t[3])) {
+                            $surface->translate($t[2], $t[3]);
+                            $surface->rotate($t[1]);
+                            $surface->translate(-$t[2], -$t[3]);
+                        } else {
+                            $surface->rotate($t[1]);
+                        }
                         break;
 
                     case "skewX":
