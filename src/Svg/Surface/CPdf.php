@@ -198,7 +198,7 @@ class CPdf
     /**
      * @var array Store the information about the relationship between font families
      * this used so that the code knows which font is the bold version of another font, etc.
-     * the value of this array is initialised in the constuctor function.
+     * the value of this array is initialised in the constructor function.
      */
     public $fontFamilies = array();
 
