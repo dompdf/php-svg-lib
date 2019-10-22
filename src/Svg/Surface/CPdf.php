@@ -352,7 +352,7 @@ class CPdf
     {
         $this->isUnicode = $isUnicode;
         $this->fontcache = $fontcache;
-        $this->tmp = $tmp;
+        $this->tmp = ($tmp === '') ? sys_get_temp_dir() : $tmp;
         $this->newDocument($pageSize);
 
         $this->compressionReady = function_exists('gzcompress');

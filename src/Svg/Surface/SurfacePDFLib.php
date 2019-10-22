@@ -159,7 +159,7 @@ class SurfacePDFLib implements SurfaceInterface
             $data = file_get_contents($image);
         }
 
-        $image = tempnam("", "svg");
+        $image = tempnam(sys_get_temp_dir(), "svg");
         file_put_contents($image, $data);
 
         $img = $this->canvas->load_image("auto", $image, "");
