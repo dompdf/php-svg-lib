@@ -41,9 +41,6 @@ class Document extends AbstractTag
     protected $pathBBox;
     protected $viewBox;
 
-    /** @var resource */
-    protected $parser;
-
     /** @var SurfaceInterface */
     protected $surface;
 
@@ -74,7 +71,7 @@ class Document extends AbstractTag
             array($this, "_charData")
         );
 
-        return $this->parser = $parser;
+        return $parser;
     }
 
     public function __construct() {
