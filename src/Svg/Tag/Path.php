@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Menager <fabien.menager@gmail.com>
+ * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license GNU LGPLv3+ http://www.gnu.org/copyleft/lesser.html
  */
 
@@ -12,6 +12,9 @@ use Svg\Surface\SurfaceInterface;
 
 class Path extends Shape
 {
+    const NUMBER_PATTERN = '[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?\s*';
+    const COMMA_PATTERN = '(?:\s+,?\s*|,\s*)';
+
     static $commandLengths = array(
         'm' => 2,
         'l' => 2,
@@ -31,16 +34,42 @@ class Path extends Shape
 
     public static function parse(string $commandSequence): array
     {
+        // kindly borrowed from fabric.util.parsePath.
+        /* @see https://github.com/fabricjs/fabric.js/blob/master/src/util/path.js#L664 */
+        $numberWithCommaPattern = '(' . static::NUMBER_PATTERN . ')' . static::COMMA_PATTERN;
+        $flagWithCommaPattern = '([01])' . static::COMMA_PATTERN . '?';
+        $arcRegex = '/'
+            . $numberWithCommaPattern
+            . '?'
+            . $numberWithCommaPattern
+            . '?'
+            . $numberWithCommaPattern
+            . $flagWithCommaPattern
+            . $flagWithCommaPattern
+            . $numberWithCommaPattern
+            . '?('
+            . static::NUMBER_PATTERN
+            . ')/';
+
         $commands = array();
         preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([eE ,\-.\d]+)*/', $commandSequence, $commands, PREG_SET_ORDER);
 
         $path = array();
         foreach ($commands as $c) {
             if (count($c) == 3) {
+                $commandLower = strtolower($c[1]);
+
+                // arcs have special flags that apparently don't require spaces.
+                if ($commandLower === 'a' && preg_match($arcRegex, $c[2], $matches)) {
+                    $matches = array_slice($matches, 1);
+                    $matches = array_map('floatval', $matches);
+                    $path[] = array_merge([$c[1]], $matches);
+                    continue;
+                }
+
                 $arguments = array();
                 preg_match_all('/([-+]?((\d+\.\d+)|((\d+)|(\.\d+)))(?:e[-+]?\d+)?)/i', $c[2], $arguments, PREG_PATTERN_ORDER);
                 $item = $arguments[0];
-                $commandLower = strtolower($c[1]);
 
                 if (
                     isset(self::$commandLengths[$commandLower]) &&
@@ -531,4 +560,4 @@ class Path extends Shape
             return 2 * M_PI - ($ta - $tb);
         }
     }
-} 
+}
