@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien Menager <fabien.menager@gmail.com>
  * @license GNU LGPLv3+ http://www.gnu.org/copyleft/lesser.html
  */
 
@@ -29,16 +29,10 @@ class Path extends Shape
         'M' => 'L',
     );
 
-    public function start($attributes)
+    public static function parse(string $commandSequence): array
     {
-        if (!isset($attributes['d'])) {
-            $this->hasShape = false;
-
-            return;
-        }
-
         $commands = array();
-        preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([eE ,\-.\d]+)*/', $attributes['d'], $commands, PREG_SET_ORDER);
+        preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([eE ,\-.\d]+)*/', $commandSequence, $commands, PREG_SET_ORDER);
 
         $path = array();
         foreach ($commands as $c) {
@@ -75,6 +69,18 @@ class Path extends Shape
             }
         }
 
+        return $path;
+    }
+
+    public function start($attributes)
+    {
+        if (!isset($attributes['d'])) {
+            $this->hasShape = false;
+
+            return;
+        }
+
+        $path = static::parse($attributes['d']);
         $surface = $this->document->getSurface();
 
         // From https://github.com/kangax/fabric.js/blob/master/src/shapes/path.class.js
