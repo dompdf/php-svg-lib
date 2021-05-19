@@ -12,8 +12,26 @@ use Svg\Surface\SurfaceInterface;
 
 class Path extends Shape
 {
-    const NUMBER_PATTERN = '[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?\s*';
-    const COMMA_PATTERN = '(?:\s+,?\s*|,\s*)';
+    // kindly borrowed from fabric.util.parsePath.
+    /* @see https://github.com/fabricjs/fabric.js/blob/master/src/util/path.js#L664 */
+    const NUMBER_PATTERN = '([-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?)\s*';
+    const COMMA_PATTERN = '(?:\s+,?\s*|,\s*)?';
+    const FLAG_PATTERN = '([01])';
+    const ARC_REGEXP = '/'
+        . self::NUMBER_PATTERN
+        . self::COMMA_PATTERN
+        . self::NUMBER_PATTERN
+        . self::COMMA_PATTERN
+        . self::NUMBER_PATTERN
+        . self::COMMA_PATTERN
+        . self::FLAG_PATTERN
+        . self::COMMA_PATTERN
+        . self::FLAG_PATTERN
+        . self::COMMA_PATTERN
+        . self::NUMBER_PATTERN
+        . self::COMMA_PATTERN
+        . self::NUMBER_PATTERN
+        . '/';
 
     static $commandLengths = array(
         'm' => 2,
@@ -34,36 +52,29 @@ class Path extends Shape
 
     public static function parse(string $commandSequence): array
     {
-        // kindly borrowed from fabric.util.parsePath.
-        /* @see https://github.com/fabricjs/fabric.js/blob/master/src/util/path.js#L664 */
-        $numberWithCommaPattern = '(' . static::NUMBER_PATTERN . ')' . static::COMMA_PATTERN;
-        $flagWithCommaPattern = '([01])' . static::COMMA_PATTERN . '?';
-        $arcRegex = '/'
-            . $numberWithCommaPattern
-            . '?'
-            . $numberWithCommaPattern
-            . '?'
-            . $numberWithCommaPattern
-            . $flagWithCommaPattern
-            . $flagWithCommaPattern
-            . $numberWithCommaPattern
-            . '?('
-            . static::NUMBER_PATTERN
-            . ')/';
-
         $commands = array();
         preg_match_all('/([MZLHVCSQTAmzlhvcsqta])([eE ,\-.\d]+)*/', $commandSequence, $commands, PREG_SET_ORDER);
-
+        
         $path = array();
         foreach ($commands as $c) {
             if (count($c) == 3) {
                 $commandLower = strtolower($c[1]);
 
                 // arcs have special flags that apparently don't require spaces.
-                if ($commandLower === 'a' && preg_match($arcRegex, $c[2], $matches)) {
-                    $matches = array_slice($matches, 1);
-                    $matches = array_map('floatval', $matches);
-                    $path[] = array_merge([$c[1]], $matches);
+                if ($commandLower === 'a' && preg_match_all(static::ARC_REGEXP, $c[2], $matches)) {
+                    $numberOfMatches = count($matches[0]);
+                    for ($k = 0; $k < $numberOfMatches; ++$k) {
+                        $path[] = [
+                            $c[1],
+                            $matches[1][$k],
+                            $matches[2][$k],
+                            $matches[3][$k],
+                            $matches[4][$k],
+                            $matches[5][$k],
+                            $matches[6][$k],
+                            $matches[7][$k],
+                        ];
+                    }
                     continue;
                 }
 
