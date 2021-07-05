@@ -427,7 +427,7 @@ class SurfaceCpdf implements SurfaceInterface
             $style->strokeLinecap,
             $style->strokeLinejoin,
             $dashArray,
-            $phases
+            $phase
         );
 
         $this->setFont($style->fontFamily, $style->fontStyle, $style->fontWeight);
