@@ -418,7 +418,7 @@ class SurfaceCpdf implements SurfaceInterface
 
         $phase=0;
         if ($style->strokeDashoffset) {
-           $phase = $style->strokeDashoffset);
+           $phase = $style->strokeDashoffset;
         }
 
 
