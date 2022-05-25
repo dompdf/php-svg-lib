@@ -8,6 +8,8 @@
 
 namespace Svg\Tag;
 
+use Svg\Style;
+
 class Image extends AbstractTag
 {
     protected $x = 0;
@@ -28,15 +30,15 @@ class Image extends AbstractTag
 
     public function start($attributes)
     {
-        $document = $this->document;
         $height = $this->document->getHeight();
         $this->y = $height;
 
         if (isset($attributes['x'])) {
-            $this->x = $attributes['x'];
+            $width = $this->document->getWidth();
+            $this->x = Style::convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $this->y = $height - $attributes['y'];
+            $this->y = $height - Style::convertSize($attributes['y'], $height);
         }
 
         if (isset($attributes['width'])) {
@@ -50,9 +52,9 @@ class Image extends AbstractTag
             $this->href = $attributes['xlink:href'];
         }
 
-        $document->getSurface()->transform(1, 0, 0, -1, 0, $height);
+        $this->document->getSurface()->transform(1, 0, 0, -1, 0, $height);
 
-        $document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
+        $this->document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
     }
 
     protected function after()

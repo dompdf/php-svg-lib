@@ -8,6 +8,8 @@
 
 namespace Svg\Tag;
 
+use Svg\Style;
+
 class Rect extends Shape
 {
     protected $x = 0;
@@ -20,10 +22,12 @@ class Rect extends Shape
     public function start($attributes)
     {
         if (isset($attributes['x'])) {
-            $this->x = $attributes['x'];
+            $width = $this->document->getWidth();
+            $this->x = Style::convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $this->y = $attributes['y'];
+            $height = $this->document->getHeight();
+            $this->y = Style::convertSize($attributes['y'], $height);
         }
 
         if (isset($attributes['width'])) {

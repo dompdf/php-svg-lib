@@ -8,6 +8,8 @@
 
 namespace Svg\Tag;
 
+use Svg\Style;
+
 class Ellipse extends Shape
 {
     protected $cx = 0;
@@ -20,10 +22,12 @@ class Ellipse extends Shape
         parent::start($attributes);
 
         if (isset($attributes['cx'])) {
-            $this->cx = $attributes['cx'];
+            $width = $this->document->getWidth();
+            $this->cx = Style::convertSize($attributes['cx'], $width);
         }
         if (isset($attributes['cy'])) {
-            $this->cy = $attributes['cy'];
+            $height = $this->document->getHeight();
+            $this->cy = Style::convertSize($attributes['cy'], $height);
         }
         if (isset($attributes['rx'])) {
             $this->rx = $attributes['rx'];

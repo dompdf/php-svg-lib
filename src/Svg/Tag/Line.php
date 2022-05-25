@@ -8,6 +8,8 @@
 
 namespace Svg\Tag;
 
+use Svg\Style;
+
 class Line extends Shape
 {
     protected $x1 = 0;
@@ -18,17 +20,20 @@ class Line extends Shape
 
     public function start($attributes)
     {
+        $height = $this->document->getHeight();
+        $width = $this->document->getWidth();
+
         if (isset($attributes['x1'])) {
-            $this->x1 = $attributes['x1'];
+            $this->x1 = Style::convertSize($attributes['x1'], $width);
         }
         if (isset($attributes['y1'])) {
-            $this->y1 = $attributes['y1'];
+            $this->y1 = Style::convertSize($attributes['y1'], $height);
         }
         if (isset($attributes['x2'])) {
-            $this->x2 = $attributes['x2'];
+            $this->x2 = Style::convertSize($attributes['x2'], $width);
         }
         if (isset($attributes['y2'])) {
-            $this->y2 = $attributes['y2'];
+            $this->y2 = Style::convertSize($attributes['y2'], $height);
         }
 
         $surface = $this->document->getSurface();
