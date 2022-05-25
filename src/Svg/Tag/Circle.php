@@ -8,6 +8,8 @@
 
 namespace Svg\Tag;
 
+use Svg\Style;
+
 class Circle extends Shape
 {
     protected $cx = 0;
@@ -17,10 +19,12 @@ class Circle extends Shape
     public function start($attributes)
     {
         if (isset($attributes['cx'])) {
-            $this->cx = $attributes['cx'];
+            $width = $this->document->getWidth();
+            $this->cx = Style::convertSize($attributes['cx'], $width);
         }
         if (isset($attributes['cy'])) {
-            $this->cy = $attributes['cy'];
+            $height = $this->document->getHeight();
+            $this->cy = Style::convertSize($attributes['cy'], $height);
         }
         if (isset($attributes['r'])) {
             $this->r = $attributes['r'];
