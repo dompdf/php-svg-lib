@@ -69,12 +69,18 @@ class UseTag extends AbstractTag
             return;
         }
 
-        $attributes = array_merge($this->reference->attributes, $attributes);
+        $mergedAttributes = $this->reference->attributes;
+        $attributesToNotMerge = ['x', 'y', 'width', 'height'];
+        foreach ($attributes as $attrKey => $attrVal) {
+            if (!in_array($attrKey, $attributesToNotMerge) && !isset($mergedAttributes[$attrKey])) {
+                $mergedAttributes[$attrKey] = $attrVal;
+            }
+        }
 
-        $this->reference->handle($attributes);
+        $this->reference->handle($mergedAttributes);
 
         foreach ($this->reference->children as $_child) {
-            $_attributes = array_merge($_child->attributes, $attributes);
+            $_attributes = array_merge($_child->attributes, $mergedAttributes);
             $_child->handle($_attributes);
         }
     }
