@@ -315,7 +315,7 @@ class SurfacePDFLib implements SurfaceInterface
         $this->style = $style;
         $canvas = $this->canvas;
 
-        if ($stroke = $style->stroke && is_array($style->stroke)) {
+        if (is_array($style->stroke) && $stroke = $style->stroke) {
             $canvas->setcolor(
                 "stroke",
                 "rgb",
@@ -326,7 +326,7 @@ class SurfacePDFLib implements SurfaceInterface
             );
         }
 
-        if ($fill = $style->fill && is_array($style->fill)) {
+        if (is_array($style->fill) && $fill = $style->fill) {
             $canvas->setcolor(
                 "fill",
                 "rgb",
