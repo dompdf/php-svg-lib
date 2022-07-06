@@ -134,21 +134,19 @@ abstract class AbstractTag
 
             $transform = $attributes["transform"];
 
-            $match = array();
+            $matches = array();
             preg_match_all(
-                '/(matrix|translate|scale|rotate|skewX|skewY)\((.*?)\)/is',
+                '/(matrix|translate|scale|rotate|skew|skewX|skewY)\((.*?)\)/is',
                 $transform,
-                $match,
+                $matches,
                 PREG_SET_ORDER
             );
 
             $transformations = array();
-            if (count($match[0])) {
-                foreach ($match as $_match) {
-                    $arguments = preg_split('/[ ,]+/', $_match[2]);
-                    array_unshift($arguments, $_match[1]);
-                    $transformations[] = $arguments;
-                }
+            foreach ($matches as $match) {
+                $arguments = preg_split('/[ ,]+/', $match[2]);
+                array_unshift($arguments, $match[1]);
+                $transformations[] = $arguments;
             }
 
             foreach ($transformations as $t) {
