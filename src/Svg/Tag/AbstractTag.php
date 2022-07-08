@@ -177,11 +177,13 @@ abstract class AbstractTag
                         break;
 
                     case "skewX":
-                        $surface->skewX($t[1]);
+                        $tan_x = tan(deg2rad($t[1]));
+                        $surface->transform(1, 0, $tan_x, 1, 0, 0);
                         break;
 
                     case "skewY":
-                        $surface->skewY($t[1]);
+                        $tan_y = tan(deg2rad($t[1]));
+                        $surface->transform(1, $tan_y, 0, 1, 0, 0);
                         break;
                 }
             }
