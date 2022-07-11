@@ -138,7 +138,6 @@ class Path extends Shape
         $tempControlY = null;
         $l = 0; //-((this.width / 2) + $this.pathOffset.x),
         $t = 0; //-((this.height / 2) + $this.pathOffset.y),
-        $methodName = null;
 
         foreach ($path as $current) {
             switch ($current[0]) { // first letter
@@ -333,23 +332,16 @@ class Path extends Shape
                     $tempX = $x + $current[1];
                     $tempY = $y + $current[2];
 
-                    if (preg_match("/[QqTt]/", $previous[0])) {
-                        // If there is no previous command or if the previous command was not a Q, q, T or t,
-                        // assume the control point is coincident with the current point
+                    // calculate reflection of previous control points
+                    if (preg_match('/[QqT]/', $previous[0])) {
+                        $controlX = 2 * $x - $controlX;
+                        $controlY = 2 * $y - $controlY;
+                    } elseif ($previous[0] === 't') {
+                        $controlX = 2 * $x - $tempControlX;
+                        $controlY = 2 * $y - $tempControlY;
+                    } else {
                         $controlX = $x;
                         $controlY = $y;
-                    } else {
-                        if ($previous[0] === 't') {
-                            // calculate reflection of previous control points for t
-                            $controlX = 2 * $x - $tempControlX;
-                            $controlY = 2 * $y - $tempControlY;
-                        } else {
-                            if ($previous[0] === 'q') {
-                                // calculate reflection of previous control points for q
-                                $controlX = 2 * $x - $controlX;
-                                $controlY = 2 * $y - $controlY;
-                            }
-                        }
                     }
 
                     $tempControlX = $controlX;
@@ -363,8 +355,6 @@ class Path extends Shape
                     );
                     $x = $tempX;
                     $y = $tempY;
-                    $controlX = $x + $current[1];
-                    $controlY = $y + $current[2];
                     break;
 
                 case 'T':
@@ -372,8 +362,14 @@ class Path extends Shape
                     $tempY = $current[2];
 
                     // calculate reflection of previous control points
-                    $controlX = 2 * $x - $controlX;
-                    $controlY = 2 * $y - $controlY;
+                    if (preg_match('/[QqTt]/', $previous[0])) {
+                        $controlX = 2 * $x - $controlX;
+                        $controlY = 2 * $y - $controlY;
+                    } else {
+                        $controlX = $x;
+                        $controlY = $y;
+                    }
+
                     $surface->quadraticCurveTo(
                         $controlX + $l,
                         $controlY + $t,
@@ -385,7 +381,6 @@ class Path extends Shape
                     break;
 
                 case 'a':
-                    // TODO: optimize this
                     $this->drawArc(
                         $surface,
                         $x + $l,
