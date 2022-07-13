@@ -4174,9 +4174,9 @@ EOT;
         $this->addContent(sprintf("\n%.3F %.3F %.3F %.3F re", $x1, $y1, $width, $height));
     }
 
-    function stroke()
+    function stroke(bool $close = false)
     {
-        $this->addContent("\nS");
+        $this->addContent("\n" . ($close ? "s" : "S"));
     }
 
     function fill()
@@ -4184,9 +4184,9 @@ EOT;
         $this->addContent("\nf" . ($this->fillRule === "evenodd" ? "*" : ""));
     }
 
-    function fillStroke()
+    function fillStroke(bool $close = false)
     {
-        $this->addContent("\nb" . ($this->fillRule === "evenodd" ? "*" : ""));
+        $this->addContent("\n" . ($close ? "b" : "B") . ($this->fillRule === "evenodd" ? "*" : ""));
     }
 
     /**

@@ -38,7 +38,7 @@ class Shape extends AbstractTag
 
             if ($fill) {
                 if ($stroke) {
-                    $surface->fillStroke();
+                    $surface->fillStroke(false);
                 } else {
 //                    if (is_string($style->fill)) {
 //                        /** @var LinearGradient|RadialGradient $gradient */
@@ -51,7 +51,7 @@ class Shape extends AbstractTag
                 }
             }
             elseif ($stroke) {
-                $surface->stroke();
+                $surface->stroke(false);
             }
             else {
                 $surface->endPath();

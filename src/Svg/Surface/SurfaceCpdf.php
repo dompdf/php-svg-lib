@@ -122,10 +122,10 @@ class SurfaceCpdf implements SurfaceInterface
         $this->canvas->closePath();
     }
 
-    public function fillStroke()
+    public function fillStroke(bool $close = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->fillStroke();
+        $this->canvas->fillStroke($close);
     }
 
     public function clip()
@@ -342,10 +342,10 @@ class SurfaceCpdf implements SurfaceInterface
         $this->stroke();
     }
 
-    public function stroke()
+    public function stroke(bool $close = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->stroke();
+        $this->canvas->stroke($close);
     }
 
     public function endPath()
