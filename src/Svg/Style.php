@@ -18,6 +18,8 @@ class Style
     const TYPE_ANGLE = 4;
     const TYPE_NUMBER = 5;
 
+    private $_parentStyle;
+
     public $color;
     public $opacity;
     public $display;
@@ -88,7 +90,7 @@ class Style
         $group = $tag->getParentGroup();
         if ($group) {
             $parent_style = $group->getStyle();
-
+            $this->_parentStyle = $parent_style;
             foreach ($parent_style as $_key => $_value) {
                 if ($_value !== null) {
                     $this->$_key = $_value;
@@ -145,13 +147,24 @@ class Style
 
     protected function fillStyles($styles)
     {
-        foreach ($this->getStyleMap() as $from => $spec) {
+        $style_map = $this->getStyleMap();
+        foreach ($style_map as $from => $spec) {
             if (isset($styles[$from])) {
                 list($to, $type) = $spec;
                 $value = null;
                 switch ($type) {
                     case self::TYPE_COLOR:
                         $value = self::parseColor($styles[$from]);
+                        if ($value === "currentcolor") {
+                            if ($type === "color") {
+                                $value = $this->_parentStyle->color;
+                            } else {
+                                $value = $this->color;
+                            }
+                        }
+                        if ($value !== null && $value[3] !== 1 && array_key_exists("{$from}-opacity", $style_map) === true) {
+                            $styles["{$from}-opacity"] = $value[3];
+                        }
                         break;
 
                     case self::TYPE_NUMBER:
@@ -177,13 +190,16 @@ class Style
 
         if (count($parts) == 2) {
             $color = $parts[1];
-        }
-        else {
+        } else {
             $color = $parts[0];
         }
 
         if ($color === "none") {
             return "none";
+        }
+
+        if ($color === "currentcolor") {
+            return "currentcolor";
         }
 
         // SVG color name
@@ -198,18 +214,18 @@ class Style
 
         // RGB color
         if (strpos($color, "rgb") !== false) {
-            return self::getTriplet($color);
+            return self::getQuad($color);
         }
 
         // RGB color
         if (strpos($color, "hsl") !== false) {
-            $triplet = self::getTriplet($color, true);
+            $quad = self::getQuad($color, true);
 
-            if ($triplet == null) {
+            if ($quad == null) {
                 return null;
             }
 
-            list($h, $s, $l) = $triplet;
+            list($h, $s, $l, $a) = $quad;
 
             $r = $l;
             $g = $l;
@@ -258,11 +274,13 @@ class Style
                         break;
                 }
             }
+            $a = $a * 255;
 
             return array(
                 $r * 255.0,
                 $g * 255.0,
                 $b * 255.0,
+                $a
             );
         }
 
@@ -282,7 +300,7 @@ class Style
         return null;
     }
 
-    static function getTriplet($color, $percent = false) {
+    static function getQuad($color, $percent = false) {
         $i = strpos($color, "(");
         $j = strpos($color, ")");
 
@@ -291,46 +309,60 @@ class Style
             return null;
         }
 
-        $triplet = preg_split("/\\s*,\\s*/", trim(substr($color, $i + 1, $j - $i - 1)));
+        $quad = preg_split("/\\s*[,\\/]\\s*/", trim(substr($color, $i + 1, $j - $i - 1)));
+        if (!isset($quad[3])) {
+            $quad[3] = 1;
+        }
 
-        if (count($triplet) != 3) {
+        if (count($quad) != 3 && count($quad) != 4) {
             return null;
         }
 
-        foreach (array_keys($triplet) as $c) {
-            $triplet[$c] = trim($triplet[$c]);
+        foreach (array_keys($quad) as $c) {
+            $quad[$c] = trim($quad[$c]);
 
             if ($percent) {
-                if ($triplet[$c][strlen($triplet[$c]) - 1] === "%") {
-                    $triplet[$c] = floatval($triplet[$c]) / 100;
+                if ($quad[$c][strlen($quad[$c]) - 1] === "%") {
+                    $quad[$c] = floatval($quad[$c]) / 100;
+                } else {
+                    $quad[$c] = $quad[$c] / 255;
                 }
-                else {
-                    $triplet[$c] = $triplet[$c] / 255;
-                }
-            }
-            else {
-                if ($triplet[$c][strlen($triplet[$c]) - 1] === "%") {
-                    $triplet[$c] = round(floatval($triplet[$c]) * 2.55);
+            } else {
+                if ($quad[$c][strlen($quad[$c]) - 1] === "%") {
+                    $quad[$c] = round(floatval($quad[$c]) * 2.55);
                 }
             }
         }
 
-        return $triplet;
+        return $quad;
     }
 
     static function parseHexColor($hex)
     {
-        $c = array(0, 0, 0);
+        $c = array(0, 0, 0, 1);
 
         // #FFFFFF
         if (isset($hex[6])) {
             $c[0] = hexdec(substr($hex, 1, 2));
             $c[1] = hexdec(substr($hex, 3, 2));
             $c[2] = hexdec(substr($hex, 5, 2));
+
+            if (isset($hex[7])) {
+                $alpha = substr($hex, 7, 2);
+                if (ctype_xdigit($alpha)) {
+                    $c[3] = round(hexdec($alpha)/255, 2);
+                }
+            }
         } else {
             $c[0] = hexdec($hex[1] . $hex[1]);
             $c[1] = hexdec($hex[2] . $hex[2]);
             $c[2] = hexdec($hex[3] . $hex[3]);
+
+            if (isset($hex[4])) {
+                if (ctype_xdigit($hex[4])) {
+                    $c[3] = round(hexdec($hex[4] . $hex[4])/255, 2);
+                }
+            }
         }
 
         return $c;
