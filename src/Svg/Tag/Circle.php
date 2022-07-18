@@ -27,7 +27,8 @@ class Circle extends Shape
             $this->cy = Style::convertSize($attributes['cy'], $height);
         }
         if (isset($attributes['r'])) {
-            $this->r = $attributes['r'];
+            $diagonal = $this->document->getDiagonal();
+            $this->r = Style::convertSize($attributes['r'], $diagonal);
         }
 
         $this->document->getSurface()->circle($this->cx, $this->cy, $this->r);
