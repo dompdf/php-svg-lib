@@ -101,6 +101,11 @@ class Document extends AbstractTag
         return $this->height;
     }
 
+    public function getDiagonal()
+    {
+        return sqrt(($this->width)**2 + ($this->height)**2) / sqrt(2);
+    }
+
     public function getDimensions() {
         $rootAttributes = null;
 

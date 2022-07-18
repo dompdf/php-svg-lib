@@ -31,10 +31,10 @@ class Image extends AbstractTag
     public function start($attributes)
     {
         $height = $this->document->getHeight();
+        $width = $this->document->getWidth();
         $this->y = $height;
 
         if (isset($attributes['x'])) {
-            $width = $this->document->getWidth();
             $this->x = Style::convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
@@ -42,10 +42,10 @@ class Image extends AbstractTag
         }
 
         if (isset($attributes['width'])) {
-            $this->width = $attributes['width'];
+            $this->width = Style::convertSize($attributes['width'], $width);
         }
         if (isset($attributes['height'])) {
-            $this->height = $attributes['height'];
+            $this->height = Style::convertSize($attributes['height'], $height);
         }
 
         if (isset($attributes['xlink:href'])) {
