@@ -20,15 +20,15 @@ class Circle extends Shape
     {
         if (isset($attributes['cx'])) {
             $width = $this->document->getWidth();
-            $this->cx = Style::convertSize($attributes['cx'], $width);
+            $this->cx = $this->convertSize($attributes['cx'], $width);
         }
         if (isset($attributes['cy'])) {
             $height = $this->document->getHeight();
-            $this->cy = Style::convertSize($attributes['cy'], $height);
+            $this->cy = $this->convertSize($attributes['cy'], $height);
         }
         if (isset($attributes['r'])) {
             $diagonal = $this->document->getDiagonal();
-            $this->r = Style::convertSize($attributes['r'], $diagonal);
+            $this->r = $this->convertSize($attributes['r'], $diagonal);
         }
 
         $this->document->getSurface()->circle($this->cx, $this->cy, $this->r);

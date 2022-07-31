@@ -187,4 +187,64 @@ abstract class AbstractTag
             }
         }
     }
+
+    /**
+     * Convert the given size for the context of this current tag.
+     * Takes a pixel-based reference, which is usually specific to the context of the size,
+     * but the actual reference size will be decided based upon the unit used.
+     *
+     * @param string $size
+     * @param float $pxReference
+     *
+     * @return float
+     */
+    protected function convertSize(string $size, float $pxReference): float
+    {
+        $reference = $pxReference;
+        $defaultFontSize = 12;
+
+        if (strpos($size, "em")) {
+            $reference = $this->style->fontSize ?? $defaultFontSize;
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "rem")) {
+            $reference = $this->document->style->fontSize ?? $defaultFontSize;
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "ex")) {
+            $emRef = $this->style->fontSize ?? $defaultFontSize;
+            $reference = $emRef * 0.5;
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "ch")) {
+            $emRef = $this->style->fontSize ?? $defaultFontSize;
+            $reference = $emRef * 0.5;
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "vw")) {
+            $reference = $this->getDocument()->getWidth();
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "vh")) {
+            $reference = $this->getDocument()->getHeight();
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "vmin")) {
+            $reference = min($this->getDocument()->getHeight(), $this->getDocument()->getWidth());
+            return Style::convertSize($size, $reference);
+        }
+
+        if (strpos($size, "vmax")) {
+            $reference = max($this->getDocument()->getHeight(), $this->getDocument()->getWidth());
+            return Style::convertSize($size, $reference);
+        }
+
+        return Style::convertSize($size, $reference);
+    }
 } 

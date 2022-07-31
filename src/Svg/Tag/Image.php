@@ -35,17 +35,17 @@ class Image extends AbstractTag
         $this->y = $height;
 
         if (isset($attributes['x'])) {
-            $this->x = Style::convertSize($attributes['x'], $width);
+            $this->x = $this->convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $this->y = $height - Style::convertSize($attributes['y'], $height);
+            $this->y = $height - $this->convertSize($attributes['y'], $height);
         }
 
         if (isset($attributes['width'])) {
-            $this->width = Style::convertSize($attributes['width'], $width);
+            $this->width = $this->convertSize($attributes['width'], $width);
         }
         if (isset($attributes['height'])) {
-            $this->height = Style::convertSize($attributes['height'], $height);
+            $this->height = $this->convertSize($attributes['height'], $height);
         }
 
         if (isset($attributes['xlink:href'])) {

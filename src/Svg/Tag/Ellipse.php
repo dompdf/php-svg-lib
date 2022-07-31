@@ -25,16 +25,16 @@ class Ellipse extends Shape
         $height = $this->document->getHeight();
 
         if (isset($attributes['cx'])) {
-            $this->cx = Style::convertSize($attributes['cx'], $width);
+            $this->cx = $this->convertSize($attributes['cx'], $width);
         }
         if (isset($attributes['cy'])) {
-            $this->cy = Style::convertSize($attributes['cy'], $height);
+            $this->cy = $this->convertSize($attributes['cy'], $height);
         }
         if (isset($attributes['rx'])) {
-            $this->rx = Style::convertSize($attributes['rx'], $width);
+            $this->rx = $this->convertSize($attributes['rx'], $width);
         }
         if (isset($attributes['ry'])) {
-            $this->ry = Style::convertSize($attributes['ry'], $height);
+            $this->ry = $this->convertSize($attributes['ry'], $height);
         }
 
         $this->document->getSurface()->ellipse($this->cx, $this->cy, $this->rx, $this->ry, 0, 0, 360, false);

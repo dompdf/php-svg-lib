@@ -49,10 +49,26 @@ class StyleTest extends TestCase
 
     public function test_convertSize()
     {
+        // Absolute lengths
         $this->assertEquals(1, Style::convertSize(1));
-        $this->assertEquals(10, Style::convertSize("10px")); // FIXME
-        $this->assertEquals(10, Style::convertSize("10pt"));
+        $this->assertEquals(10, Style::convertSize("10px"));
+        $this->assertEquals((10 * 96) / 72 , Style::convertSize("10pt"));
+        $this->assertEquals((10 * 72) / 72 , Style::convertSize("10pt", 11, 72));
         $this->assertEquals(8, Style::convertSize("80%", 10, 72));
+        $this->assertEquals((10 * 96) / 2.54, Style::convertSize("10cm"));
+        $this->assertEquals((10 * 96) / 25.4, Style::convertSize("10mm"));
+        $this->assertEquals(10 * 96, Style::convertSize("10in"));
+        $this->assertEquals((10 * 96) / 6, Style::convertSize("10pc"));
+
+        // Relative lengths
+        $this->assertEquals(200, Style::convertSize("10em", 20));
+        $this->assertEquals(200, Style::convertSize("10ex", 20));
+        $this->assertEquals(200, Style::convertSize("10ch", 20));
+        $this->assertEquals(200, Style::convertSize("10rem", 20));
+        $this->assertEquals(2, Style::convertSize("10vw", 20));
+        $this->assertEquals(2, Style::convertSize("10vh", 20));
+        $this->assertEquals(2, Style::convertSize("10vmin", 20));
+        $this->assertEquals(2, Style::convertSize("10vmax", 20));
     }
 
 }

@@ -25,17 +25,17 @@ class Rect extends Shape
         $height = $this->document->getHeight();
 
         if (isset($attributes['x'])) {
-            $this->x = Style::convertSize($attributes['x'], $width);
+            $this->x = $this->convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $this->y = Style::convertSize($attributes['y'], $height);
+            $this->y = $this->convertSize($attributes['y'], $height);
         }
 
         if (isset($attributes['width'])) {
-            $this->width = Style::convertSize($attributes['width'], $width);
+            $this->width = $this->convertSize($attributes['width'], $width);
         }
         if (isset($attributes['height'])) {
-            $this->height = Style::convertSize($attributes['height'], $width);
+            $this->height = $this->convertSize($attributes['height'], $width);
         }
 
         if (isset($attributes['rx'])) {

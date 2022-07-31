@@ -372,6 +372,12 @@ class Style
             return $size;
         }
 
+        // Has to be before 'in' to not be mis-identified
+        if ($pos = strpos($size, "vmin")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * ($val / 100);
+        }
+
         if ($pos = strpos($size, "px")) {
             return floatval(substr($size, 0, $pos));
         }
@@ -415,13 +421,35 @@ class Style
             return $referenceSize * $val;
         }
 
-        // TODO - vmin
-        // TODO - vmax
-        // TODO - vh
-        // TODO - vw
-        // TODO - rem
-        // TODO - ch
-        // TODO - ex
+        if ($pos = strpos($size, "rem")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * $val;
+        }
+
+        if ($pos = strpos($size, "ex")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * $val;
+        }
+
+        if ($pos = strpos($size, "ch")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * $val;
+        }
+
+        if ($pos = strpos($size, "vw")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * ($val / 100);
+        }
+
+        if ($pos = strpos($size, "vh")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * ($val / 100);
+        }
+
+        if ($pos = strpos($size, "vmax")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * ($val / 100);
+        }
 
         return null;
     }
