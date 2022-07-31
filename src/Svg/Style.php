@@ -408,23 +408,52 @@ class Style
             return floatval(substr($size, 0, $pos));
         }
 
-        if ($pos = strpos($size, "pt")) {
-            return floatval(substr($size, 0, $pos));
-        }
-
-        if ($pos = strpos($size, "cm")) {
-            return floatval(substr($size, 0, $pos)) * $dpi;
-        }
-
         if ($pos = strpos($size, "%")) {
             return $referenceSize * substr($size, 0, $pos) / 100;
         }
 
-        if ($pos = strpos($size, "em")) {
-            return $referenceSize * substr($size, 0, $pos);
+        if ($pos = strpos($size, "pt")) {
+            $val = floatval(substr($size, 0, $pos));
+            return ($val * $dpi) / 72;
         }
 
-        // TODO cm, mm, pc, in, etc
+        if ($pos = strpos($size, "cm")) {
+            $val = floatval(substr($size, 0, $pos));
+            return ($val * $dpi) / 2.54;
+        }
+
+        if ($pos = strpos($size, "mm")) {
+            $val = floatval(substr($size, 0, $pos));
+            return (($val * $dpi) / 2.54) / 10;
+        }
+
+        if ($pos = strpos($size, "q")) {
+            $val = floatval(substr($size, 0, $pos));
+            return (($val * $dpi) / 2.54) / 40;
+        }
+
+        if ($pos = strpos($size, "in")) {
+            $val = floatval(substr($size, 0, $pos));
+            return ($val * $dpi);
+        }
+
+        if ($pos = strpos($size, "pc")) {
+            $val = floatval(substr($size, 0, $pos));
+            return ($val * $dpi) / 6;
+        }
+
+        if ($pos = strpos($size, "em")) {
+            $val = floatval(substr($size, 0, $pos));
+            return $referenceSize * $val;
+        }
+
+        // TODO - vmin
+        // TODO - vmax
+        // TODO - vh
+        // TODO - vw
+        // TODO - rem
+        // TODO - ch
+        // TODO - ex
 
         return null;
     }
