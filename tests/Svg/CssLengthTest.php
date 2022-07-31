@@ -42,6 +42,7 @@ class CssLengthTest extends TestCase
         $this->assertEquals('vmin', (new CssLength('40vmin'))->getUnit());
         $this->assertEquals('q', (new CssLength('50Q'))->getUnit());
         $this->assertEquals('', (new CssLength('50GB'))->getUnit());
+        $this->assertEquals('rem', (new CssLength('44.5435rem'))->getUnit());
     }
 
 }
