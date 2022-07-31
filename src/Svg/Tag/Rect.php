@@ -35,7 +35,7 @@ class Rect extends Shape
             $this->width = $this->convertSize($attributes['width'], $width);
         }
         if (isset($attributes['height'])) {
-            $this->height = $this->convertSize($attributes['height'], $width);
+            $this->height = $this->convertSize($attributes['height'], $height);
         }
 
         if (isset($attributes['rx'])) {
