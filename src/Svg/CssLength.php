@@ -6,27 +6,28 @@ class CssLength
 {
     /**
      * Array of valid css length units.
-     * Should be pre-sorted so no earlier length is contained within a latter (eg. 'in' within 'vmin').
+     * Should be pre-sorted by unit text length so no earlier length can be
+     * contained within a latter (eg. 'in' within 'vmin').
      *
      * @var string[]
      */
     protected static $units = [
+        'vmax',
         'vmin',
+        'rem',
         'px',
-        '%',
         'pt',
         'cm',
         'mm',
-        'q',
         'in',
         'pc',
         'em',
-        'rem',
         'ex',
         'ch',
         'vw',
         'vh',
-        'vmax'
+        '%',
+        'q',
     ];
 
     /**
