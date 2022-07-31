@@ -8,6 +8,7 @@
 
 namespace Svg\Tag;
 
+use Svg\CssLength;
 use Svg\Document;
 use Svg\Style;
 
@@ -200,51 +201,36 @@ abstract class AbstractTag
      */
     protected function convertSize(string $size, float $pxReference): float
     {
+        $length = new CssLength($size);
         $reference = $pxReference;
         $defaultFontSize = 12;
 
-        if (strpos($size, "em")) {
-            $reference = $this->style->fontSize ?? $defaultFontSize;
-            return Style::convertSize($size, $reference);
+        switch ($length->getUnit()) {
+            case "em":
+                $reference = $this->style->fontSize ?? $defaultFontSize;
+                break;
+            case "rem":
+                $reference = $this->document->style->fontSize ?? $defaultFontSize;
+                break;
+            case "ex":
+            case "ch":
+                $emRef = $this->style->fontSize ?? $defaultFontSize;
+                $reference = $emRef * 0.5;
+                break;
+            case "vw":
+                $reference = $this->getDocument()->getWidth();
+                break;
+            case "vh":
+                $reference = $this->getDocument()->getHeight();
+                break;
+            case "vmin":
+                $reference = min($this->getDocument()->getHeight(), $this->getDocument()->getWidth());
+                break;
+            case "vmax":
+                $reference = max($this->getDocument()->getHeight(), $this->getDocument()->getWidth());
+                break;
         }
 
-        if (strpos($size, "rem")) {
-            $reference = $this->document->style->fontSize ?? $defaultFontSize;
-            return Style::convertSize($size, $reference);
-        }
-
-        if (strpos($size, "ex")) {
-            $emRef = $this->style->fontSize ?? $defaultFontSize;
-            $reference = $emRef * 0.5;
-            return Style::convertSize($size, $reference);
-        }
-
-        if (strpos($size, "ch")) {
-            $emRef = $this->style->fontSize ?? $defaultFontSize;
-            $reference = $emRef * 0.5;
-            return Style::convertSize($size, $reference);
-        }
-
-        if (strpos($size, "vw")) {
-            $reference = $this->getDocument()->getWidth();
-            return Style::convertSize($size, $reference);
-        }
-
-        if (strpos($size, "vh")) {
-            $reference = $this->getDocument()->getHeight();
-            return Style::convertSize($size, $reference);
-        }
-
-        if (strpos($size, "vmin")) {
-            $reference = min($this->getDocument()->getHeight(), $this->getDocument()->getWidth());
-            return Style::convertSize($size, $reference);
-        }
-
-        if (strpos($size, "vmax")) {
-            $reference = max($this->getDocument()->getHeight(), $this->getDocument()->getWidth());
-            return Style::convertSize($size, $reference);
-        }
-
-        return Style::convertSize($size, $reference);
+        return (new CssLength($size))->toPixels($reference);
     }
 } 

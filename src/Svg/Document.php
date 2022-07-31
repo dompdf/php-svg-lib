@@ -140,12 +140,12 @@ class Document extends AbstractTag
     public function handleSizeAttributes($attributes){
         if ($this->width === null) {
             if (isset($attributes["width"])) {
-                $width = Style::convertSize($attributes["width"], 400);
+                $width = $this->convertSize($attributes["width"], 400);
                 $this->width  = $width;
             }
 
             if (isset($attributes["height"])) {
-                $height = Style::convertSize($attributes["height"], 300);
+                $height = $this->convertSize($attributes["height"], 300);
                 $this->height = $height;
             }
 
