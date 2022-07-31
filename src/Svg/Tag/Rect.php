@@ -21,30 +21,21 @@ class Rect extends Shape
 
     public function start($attributes)
     {
+        $width = $this->document->getWidth();
+        $height = $this->document->getHeight();
+
         if (isset($attributes['x'])) {
-            $width = $this->document->getWidth();
             $this->x = Style::convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $height = $this->document->getHeight();
             $this->y = Style::convertSize($attributes['y'], $height);
         }
 
         if (isset($attributes['width'])) {
-            if ('%' === substr($attributes['width'], -1)) {
-                $factor = substr($attributes['width'], 0, -1) / 100;
-                $this->width = $this->document->getWidth() * $factor;
-            } else {
-                $this->width = $attributes['width'];
-            }
+            $this->width = Style::convertSize($attributes['width'], $width);
         }
         if (isset($attributes['height'])) {
-            if ('%' === substr($attributes['height'], -1)) {
-                $factor = substr($attributes['height'], 0, -1) / 100;
-                $this->height = $this->document->getHeight() * $factor;
-            } else {
-                $this->height = $attributes['height'];
-            }
+            $this->height = Style::convertSize($attributes['height'], $width);
         }
 
         if (isset($attributes['rx'])) {
