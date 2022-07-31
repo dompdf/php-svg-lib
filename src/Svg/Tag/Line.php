@@ -24,16 +24,16 @@ class Line extends Shape
         $width = $this->document->getWidth();
 
         if (isset($attributes['x1'])) {
-            $this->x1 = Style::convertSize($attributes['x1'], $width);
+            $this->x1 = $this->convertSize($attributes['x1'], $width);
         }
         if (isset($attributes['y1'])) {
-            $this->y1 = Style::convertSize($attributes['y1'], $height);
+            $this->y1 = $this->convertSize($attributes['y1'], $height);
         }
         if (isset($attributes['x2'])) {
-            $this->x2 = Style::convertSize($attributes['x2'], $width);
+            $this->x2 = $this->convertSize($attributes['x2'], $width);
         }
         if (isset($attributes['y2'])) {
-            $this->y2 = Style::convertSize($attributes['y2'], $height);
+            $this->y2 = $this->convertSize($attributes['y2'], $height);
         }
 
         $surface = $this->document->getSurface();

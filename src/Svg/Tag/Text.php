@@ -23,10 +23,10 @@ class Text extends Shape
 
         if (isset($attributes['x'])) {
             $width = $this->document->getWidth();
-            $this->x = Style::convertSize($attributes['x'], $width);
+            $this->x = $this->convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $this->y = $height - Style::convertSize($attributes['y'], $height);
+            $this->y = $height - $this->convertSize($attributes['y'], $height);
         }
 
         $this->document->getSurface()->transform(1, 0, 0, -1, 0, $height);
