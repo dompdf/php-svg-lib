@@ -435,51 +435,52 @@ class SurfaceCpdf implements SurfaceInterface
 
     public function setFont($family, $style, $weight)
     {
-        $map = array(
-            "serif"      => "Times",
-            "sans-serif" => "Helvetica",
-            "fantasy"    => "Symbol",
-            "cursive"    => "Times",
-            "monospace"  => "Courier",
+        $map = [
+            "serif"      => "times",
+            "sans-serif" => "helvetica",
+            "fantasy"    => "symbol",
+            "cursive"    => "times",
+            "monospace"  => "courier"
+        ];
 
-            "arial"      => "Helvetica",
-            "verdana"    => "Helvetica",
-        );
+        $styleMap = [
+            "courier" => [
+                ""   => "Courier",
+                "b"  => "Courier-Bold",
+                "i"  => "Courier-Oblique",
+                "bi" => "Courier-BoldOblique",
+            ],
+            "helvetica" => [
+                ""   => "Helvetica",
+                "b"  => "Helvetica-Bold",
+                "i"  => "Helvetica-Oblique",
+                "bi" => "Helvetica-BoldOblique",
+            ],
+            "symbol" => [
+                "" => "Symbol"
+            ],
+            "times" => [
+                ""   => "Times-Roman",
+                "b"  => "Times-Bold",
+                "i"  => "Times-Italic",
+                "bi" => "Times-BoldItalic",
+            ],
+        ];
 
-        $styleMap = array(
-            'Helvetica' => array(
-                'b'  => 'Helvetica-Bold',
-                'i'  => 'Helvetica-Oblique',
-                'bi' => 'Helvetica-BoldOblique',
-            ),
-            'Courier' => array(
-                'b'  => 'Courier-Bold',
-                'i'  => 'Courier-Oblique',
-                'bi' => 'Courier-BoldOblique',
-            ),
-            'Times' => array(
-                ''   => 'Times-Roman',
-                'b'  => 'Times-Bold',
-                'i'  => 'Times-Italic',
-                'bi' => 'Times-BoldItalic',
-            ),
-        );
-
-        $family = strtolower($family);
-        $style  = strtolower($style);
-        $weight = strtolower($weight);
-
-        if (isset($map[$family])) {
-            $family = $map[$family];
+        $family_lc = strtolower($family);
+        if (isset($map[$family_lc])) {
+            $family = $map[$family_lc];
         }
 
         if (isset($styleMap[$family])) {
             $key = "";
 
+            $weight = strtolower($weight);
             if ($weight === "bold" || $weight === "bolder" || (is_numeric($weight) && $weight >= 600)) {
                 $key .= "b";
             }
 
+            $style = strtolower($style);
             if ($style === "italic" || $style === "oblique") {
                 $key .= "i";
             }
