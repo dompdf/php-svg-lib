@@ -52,6 +52,10 @@ class Image extends AbstractTag
             $this->href = $attributes['xlink:href'];
         }
 
+        if (isset($attributes['href'])) {
+            $this->href = $attributes['href'];
+        }
+
         $this->document->getSurface()->transform(1, 0, 0, -1, 0, $height);
 
         $this->document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
