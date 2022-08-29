@@ -38,7 +38,7 @@ class UseTag extends AbstractTag
 
         $document = $this->getDocument();
 
-        $link = $attributes["xlink:href"];
+        $link = $attributes["href"] ?? $attributes["xlink:href"];
         $this->reference = $document->getDef($link);
 
         if ($this->reference) {
