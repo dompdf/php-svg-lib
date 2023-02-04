@@ -18,6 +18,7 @@ class StyleTest extends TestCase
     {
         $this->assertEquals("none", Style::parseColor("none"));
         $this->assertEquals("currentcolor", Style::parseColor("currentcolor"));
+        $this->assertEquals(array(0, 0, 0, 0), Style::parseColor("transparent"));
         $this->assertEquals(array(255, 0, 0, 1), Style::parseColor("RED"));
         $this->assertEquals(array(0, 0, 255, 1), Style::parseColor("blue"));
         $this->assertEquals(array(0, 0, 0, 1), Style::parseColor("black"));
