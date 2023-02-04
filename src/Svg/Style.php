@@ -202,6 +202,10 @@ class Style
             return "currentcolor";
         }
 
+        if ($color === "transparent") {
+            return [0,0,0,0];
+        }
+
         // SVG color name
         if (isset(self::$colorNames[$color])) {
             return self::parseHexColor(self::$colorNames[$color]);
