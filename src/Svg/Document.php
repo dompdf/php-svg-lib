@@ -133,6 +133,7 @@ class Document extends AbstractTag
                 break;
             }
         }
+        xml_parse($parser, "", true);
 
         xml_parser_free($parser);
 
