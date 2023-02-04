@@ -162,7 +162,7 @@ class Style
                                 $value = $this->color;
                             }
                         }
-                        if ($value !== null && $value[3] !== 1 && array_key_exists("{$from}-opacity", $style_map) === true) {
+                        if (is_array($value) && $value[3] !== 1 && array_key_exists("{$from}-opacity", $style_map) === true) {
                             $styles["{$from}-opacity"] = $value[3];
                         }
                         break;
