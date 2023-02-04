@@ -315,7 +315,8 @@ class Style
                 return null;
             }
 
-            return trim(substr($color, $i + 1, $j - $i - 1));
+            //FIXME: gradients not supported?
+            return null; // trim(substr($color, $i + 1, $j - $i - 1));
         }
 
         return null;
