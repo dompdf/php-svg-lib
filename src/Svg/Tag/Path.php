@@ -480,6 +480,12 @@ class Path extends Shape
 
         $px = -$cosTh * $toX * 0.5 - $sinTh * $toY * 0.5;
         $py = -$cosTh * $toY * 0.5 + $sinTh * $toX * 0.5;
+        
+        $ry = $ry ? $ry : 0.1;
+        $py = $py ? $py : 0.1;
+        $rx = $rx ? $rx : 0.1;
+        $px = $px ? $px : 0.1;
+        
         $rx2 = $rx * $rx;
         $ry2 = $ry * $ry;
         $py2 = $py * $py;
