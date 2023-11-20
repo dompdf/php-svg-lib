@@ -14,12 +14,19 @@ class UseTag extends AbstractTag
     protected $y = 0;
     protected $width;
     protected $height;
+    protected $instances = 0;
 
     /** @var AbstractTag */
     protected $reference;
 
     protected function before($attributes)
     {
+        $this->instances++;
+        if ($this->instances > 1) {
+            //TODO: log circular reference error state
+            return;
+        }
+
         if (isset($attributes['x'])) {
             $this->x = $attributes['x'];
         }
@@ -52,6 +59,9 @@ class UseTag extends AbstractTag
     }
 
     protected function after() {
+        if ($this->instances > 0) {
+            return;
+        }
         parent::after();
 
         if ($this->reference) {
@@ -63,6 +73,11 @@ class UseTag extends AbstractTag
 
     public function handle($attributes)
     {
+        if ($this->instances > 1) {
+            //TODO: log circular reference error state
+            return;
+        }
+
         parent::handle($attributes);
 
         if (!$this->reference) {
@@ -87,6 +102,11 @@ class UseTag extends AbstractTag
 
     public function handleEnd()
     {
+        $this->instances--;
+        if ($this->instances > 0) {
+            return;
+        }
+
         parent::handleEnd();
 
         if (!$this->reference) {
