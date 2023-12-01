@@ -85,7 +85,7 @@ class UseTag extends AbstractTag
         }
 
         $mergedAttributes = $this->reference->attributes;
-        $attributesToNotMerge = ['x', 'y', 'width', 'height'];
+        $attributesToNotMerge = ['x', 'y', 'width', 'height', 'href', 'xlink:href', 'id'];
         foreach ($attributes as $attrKey => $attrVal) {
             if (!in_array($attrKey, $attributesToNotMerge) && !isset($mergedAttributes[$attrKey])) {
                 $mergedAttributes[$attrKey] = $attrVal;
