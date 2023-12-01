@@ -53,6 +53,8 @@ class Document extends AbstractTag
     /** @var \Sabberworm\CSS\CSSList\Document[] */
     protected $styleSheets = array();
 
+    public $allowExternalReferences = true;
+
     public function loadFile($filename)
     {
         $this->filename = $filename;

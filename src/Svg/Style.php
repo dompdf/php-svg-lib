@@ -139,6 +139,16 @@ class Style
                         break;
                     }
                 }
+
+                if (
+                    \array_key_exists("font-family", $styles)
+                    && (
+                        \strtolower(\substr($this->href, 0, 7)) === "phar://"
+                        || ($this->document->allowExternalReferences === false && \strtolower(\substr($this->href, 0, 5)) !== "data:")
+                    )
+                ) {
+                    unset($style["font-family"]);
+                }
             }
         }
 
