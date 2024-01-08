@@ -1,3 +1,5 @@
-excluded
-gui
-.idea
+composer.phar
+composer.lock
+phpunit.xml
+vendor
+.phpunit.result.cache
