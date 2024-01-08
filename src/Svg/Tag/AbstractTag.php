@@ -59,7 +59,7 @@ abstract class AbstractTag
     {
         $this->attributes = $attributes;
 
-        if (!$this->getDocument()->inDefs) {
+        if (!$this->getDocument()->inDefs || $this instanceof StyleTag) {
             $this->before($attributes);
             $this->start($attributes);
         }
@@ -67,7 +67,7 @@ abstract class AbstractTag
 
     public function handleEnd()
     {
-        if (!$this->getDocument()->inDefs) {
+        if (!$this->getDocument()->inDefs || $this instanceof StyleTag) {
             $this->end();
             $this->after();
         }
