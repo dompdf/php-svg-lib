@@ -401,7 +401,7 @@ class Document extends AbstractTag
                 break;
         }
 
-        if (!$this->inDefs && $tag) {
+        if ((!$this->inDefs && $tag) || $tag instanceof StyleTag) {
             $tag->handleEnd();
         }
     }
