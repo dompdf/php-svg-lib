@@ -18,6 +18,7 @@ class Style
     const TYPE_ANGLE = 4;
     const TYPE_NUMBER = 5;
 
+    private $_document;
     private $_parentStyle;
 
     public $color;
@@ -42,6 +43,12 @@ class Style
     public $fontWeight = 'normal';
     public $fontStyle = 'normal';
     public $textAnchor = 'start';
+
+    public function __construct($document = null) {
+        if ($document !== null) {
+            $this->_document = $document;
+        }
+    }
 
     protected function getStyleMap()
     {
@@ -139,16 +146,6 @@ class Style
                         break;
                     }
                 }
-
-                if (
-                    \array_key_exists("font-family", $styles)
-                    && (
-                        \strtolower(\substr($this->href, 0, 7)) === "phar://"
-                        || ($this->document->allowExternalReferences === false && \strtolower(\substr($this->href, 0, 5)) !== "data:")
-                    )
-                ) {
-                    unset($style["font-family"]);
-                }
             }
         }
 
@@ -183,6 +180,16 @@ class Style
 
                     default:
                         $value = $styles[$from];
+                }
+
+                if ($from === "font-family") {
+                    $scheme = \strtolower(parse_url($value, PHP_URL_SCHEME) ?: "");
+                    if (
+                        $scheme === "phar" || \strtolower(\substr($value, 0, 7)) === "phar://"
+                        || ($this->_document !== null && $this->_document->allowExternalReferences === false && $scheme !== "data")
+                    ) {
+                        continue;
+                    }
                 }
 
                 if ($value !== null) {

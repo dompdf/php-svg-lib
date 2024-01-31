@@ -202,7 +202,7 @@ class Document extends AbstractTag
     {
         $surface = $this->getSurface();
 
-        $style = new DefaultStyle();
+        $style = new DefaultStyle($this);
         $style->inherit($this);
         $style->fromAttributes($attributes);
 

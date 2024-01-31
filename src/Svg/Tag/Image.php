@@ -58,8 +58,14 @@ class Image extends AbstractTag
 
         $this->document->getSurface()->transform(1, 0, 0, -1, 0, $height);
 
-        if (\strtolower(\substr($this->href, 0, 7)) === "phar://" || ($this->document->allowExternalReferences === false && \strtolower(\substr($this->href, 0, 5) !== "data:"))) {
-            return;
+        if ($from === "font-family") {
+            $scheme = \strtolower(parse_url($this->href, PHP_URL_SCHEME) ?: "");
+            if (
+                $scheme === "phar" || \strtolower(\substr($this->href, 0, 7)) === "phar://"
+                || ($this->document->allowExternalReferences === false && $scheme !== "data")
+            ) {
+                return;
+            }
         }
 
         $this->document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);

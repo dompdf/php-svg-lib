@@ -119,7 +119,7 @@ abstract class AbstractTag
      * @return Style
      */
     protected function makeStyle($attributes) {
-        $style = new Style();
+        $style = new Style($this->document);
         $style->inherit($this);
         $style->fromStyleSheets($this, $attributes);
         $style->fromAttributes($attributes);
