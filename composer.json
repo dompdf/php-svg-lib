@@ -1,13 +1,13 @@
 {
-  "name": "phenx/php-svg-lib",
+  "name": "dompdf/php-svg-lib",
   "type": "library",
   "description": "A library to read, parse and export to PDF SVG files.",
-  "homepage": "https://github.com/PhenX/php-svg-lib",
+  "homepage": "https://github.com/dompdf/php-svg-lib",
   "license": "LGPL-3.0-or-later",
   "authors": [
     {
-      "name": "Fabien Ménager",
-      "email": "fabien.menager@gmail.com"
+      "name": "The SvgLib Community",
+      "homepage": "https://github.com/dompdf/php-svg-lib/blob/master/AUTHORS.md"
     }
   ],
   "autoload": {
