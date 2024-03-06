@@ -10,7 +10,7 @@ use Svg\Tag\Path;
 
 final class PathTest extends TestCase
 {
-    public function commandProvider(): array
+    public static function commandProvider(): array
     {
         return [
             'parse a relative arc with the shorthand format' => [
