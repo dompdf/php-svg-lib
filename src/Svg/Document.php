@@ -31,6 +31,7 @@ use Svg\Tag\UseTag;
 class Document extends AbstractTag
 {
     protected $filename;
+    protected $_defs_depth = 0;
     public $inDefs = false;
 
     protected $x;
@@ -79,6 +80,31 @@ class Document extends AbstractTag
 
     public function __construct() {
 
+    }
+
+    /**
+     * Increase the nesting level for defs-like elements
+     *
+     * @return int
+     */
+    public function enterDefs () {
+        $this->_defs_depth++;
+        $this->inDefs = true;
+        return $this->_defs_depth;
+    }
+
+    /**
+     * Decrease the nesting level for defs-like elements
+     *
+     * @return int
+     */
+    public function exitDefs () {
+        $this->_defs_depth--;
+        if ($this->_defs_depth < 0) {
+            $this->_defs_depth = 0;
+        }
+        $this->inDefs = ($this->_defs_depth > 0 ? true : false);
+        return $this->_defs_depth;
     }
 
     /**
@@ -215,6 +241,7 @@ class Document extends AbstractTag
 
     public function render(SurfaceInterface $surface)
     {
+        $this->_defs_depth = 0;
         $this->inDefs = false;
         $this->surface = $surface;
 
@@ -258,7 +285,7 @@ class Document extends AbstractTag
 
         switch (strtolower($name)) {
             case 'defs':
-                $this->inDefs = true;
+                $this->enterDefs();
                 return;
 
             case 'svg':
@@ -328,7 +355,7 @@ class Document extends AbstractTag
                 break;
 
             case 'symbol':
-                $this->inDefs = true;
+                $this->enterDefs();
                 $tag = new Symbol($this, $name);
                 break;
     
@@ -381,11 +408,11 @@ class Document extends AbstractTag
         $tag = null;
         switch (strtolower($name)) {
             case 'defs':
-                $this->inDefs = false;
+                $this->exitDefs();
                 return;
 
             case 'symbol':
-                $this->inDefs = false;
+                $this->exitDefs();
                 $tag = array_pop($this->stack);
                 break;
     
