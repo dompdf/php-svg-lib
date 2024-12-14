@@ -76,6 +76,7 @@ final class PathTest extends TestCase
      * @param string $commandSequence
      * @param array $expected
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('commandProvider')]
     public function testParseCommands(string $commandSequence, array $expected)
     {
         $result = Path::parse($commandSequence);
