@@ -3,6 +3,7 @@ name: "Run unit tests"
 on:
   - push
   - pull_request
+  - workflow_dispatch
 
 env:
   COMPOSER_MEMORY_LIMIT: -1
@@ -11,13 +12,16 @@ jobs:
   test:
     name: "Build"
     runs-on: ubuntu-latest
+
     strategy:
       max-parallel: 12
       matrix:
-        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', 8.3']
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        package-release: [dist]
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
@@ -26,7 +30,9 @@ jobs:
           extensions: exif,json,mbstring,dom
 
       - name: Install composer dependencies
-        uses: ramsey/composer-install@v2
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.package-release }}
 
       - name: Run unit tests
         run: ./vendor/bin/phpunit
