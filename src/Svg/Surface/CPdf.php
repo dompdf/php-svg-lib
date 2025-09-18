@@ -5493,7 +5493,7 @@ EOT;
      * @param float $h Height
      * @param bool $is_mask true if the image is a mask
      * @param bool $mask true if the image is masked
-     * @throws Exception
+     * @throws \Exception
      */
     function addImagePng(&$img, $file, $x, $y, $w = 0.0, $h = 0.0, $is_mask = false, $mask = null)
     {
@@ -5741,7 +5741,7 @@ EOT;
      * @param $y
      * @param int $w
      * @param int $h
-     * @throws Exception
+     * @throws \Exception
      */
     function addPngFromFile($file, $x, $y, $w = 0, $h = 0)
     {
