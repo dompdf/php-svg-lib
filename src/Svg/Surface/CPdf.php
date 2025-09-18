@@ -597,6 +597,8 @@ class CPdf
      */
     protected function o_catalog($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -676,6 +678,8 @@ class CPdf
      */
     protected function o_pages($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -824,6 +828,8 @@ class CPdf
      */
     protected function o_outlines($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -867,6 +873,8 @@ class CPdf
      */
     protected function o_font($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1324,6 +1332,8 @@ EOT;
      */
     protected function o_fontDescriptor($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1389,6 +1399,8 @@ EOT;
      */
     protected function o_fontEncoding($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1442,6 +1454,8 @@ EOT;
      */
     protected function o_fontDescendentCID($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1576,6 +1590,8 @@ EOT;
      */
     protected function o_fontGIDtoCIDMap($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1633,6 +1649,8 @@ EOT;
      */
     protected function o_procset($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1745,6 +1763,8 @@ EOT;
      */
     protected function o_action($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1806,6 +1826,8 @@ EOT;
      */
     protected function o_annotation($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1872,6 +1894,8 @@ EOT;
      */
     protected function o_page($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1983,6 +2007,8 @@ EOT;
      */
     protected function o_contents($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -2873,12 +2899,13 @@ EOT;
             case 'out':
                 $info = &$this->objects[$id]['info'];
 
+                $file_content_compressed = '';
+
                 if ($this->compressionReady) {
                     $filepath = $info['filepath'];
                     $checksum = md5_file($filepath);
                     $f = fopen($filepath, "rb");
 
-                    $file_content_compressed = '';
                     $deflateContext = deflate_init(ZLIB_ENCODING_DEFLATE, ['level' => 6]);
                     while (($block = fread($f, 8192))) {
                         $file_content_compressed .= deflate_add($deflateContext, $block, ZLIB_NO_FLUSH);
@@ -5836,6 +5863,8 @@ EOT;
      */
     function addPngFromBuf(&$data, $file, $x, $y, $w = 0.0, $h = 0.0, $is_mask = false, $mask = null)
     {
+        $info = [];
+
         if (isset($this->imagelist[$file])) {
             $data = null;
             $info['width'] = $this->imagelist[$file]['w'];
