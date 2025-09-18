@@ -131,13 +131,13 @@ class CPdf
     private $gstates = [];
 
     /**
-     * @var array Current color for fill operations, defaults to inactive value,
+     * @var array|null Current color for fill operations, defaults to inactive value,
      * all three components should be between 0 and 1 inclusive when active
      */
     public $currentColor = null;
 
     /**
-     * @var array Current color for stroke operations (lines etc.)
+     * @var array|null Current color for stroke operations (lines etc.)
      */
     public $currentStrokeColor = null;
 
@@ -306,7 +306,7 @@ class CPdf
     public $destinations = [];
 
     /**
-     * @var array Store the stack for the transaction commands, each item in here is a record of the values of all the
+     * @var array|string Store the stack for the transaction commands, each item in here is a record of the values of all the
      * publiciables within the class, so that the user can rollback at will (from each 'start' command)
      * note that this includes the objects array, so these can be large.
      */
@@ -2319,7 +2319,7 @@ EOT;
      * @param integer $id
      * @param string $action
      * @param mixed $options
-     * @return string
+     * @return null|string
      */
     protected function o_xobject($id, $action, $options = '')
     {
@@ -4060,7 +4060,7 @@ EOT;
      * @param float  $width
      * @param string $cap
      * @param string $join
-     * @param array  $dash
+     * @param array|string  $dash
      * @param int    $phase
      */
     function setLineStyle($width = 1, $cap = '', $join = '', $dash = '', $phase = 0)
