@@ -217,7 +217,11 @@ class SurfaceCpdf implements SurfaceInterface
             case IMAGETYPE_GIF:
             case IMAGETYPE_BMP:
                 // @todo use cache for BMP and GIF
-                $img = $this->_convert_gif_bmp_to_png($img, $type);
+                if (method_exists($this, '_convert_to_png')) {
+                    $img = $this->_convert_to_png($img, $type);
+                } elseif (method_exists($this, '_convert_gif_bmp_to_png')) {// Old CPDF.php adapters
+                    $img = $this->_convert_gif_bmp_to_png($img, $type);
+                }
 
             case IMAGETYPE_PNG:
                 $this->canvas->addPngFromFile($img, $x, $y - $h, $w, $h);
