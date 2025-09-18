@@ -357,7 +357,7 @@ class Document extends AbstractTag
                 $this->enterDefs();
                 $tag = new Symbol($this, $name);
                 break;
-    
+
             case 'clippath':
                 $tag = new ClipPath($this, $name);
                 break;
@@ -403,7 +403,7 @@ class Document extends AbstractTag
 
     function _tagEnd($parser, $name)
     {
-        /** @var AbstractTag $tag */
+        /** @var AbstractTag|null $tag */
         $tag = null;
         switch (strtolower($name)) {
             case 'defs':
@@ -414,7 +414,7 @@ class Document extends AbstractTag
                 $this->exitDefs();
                 $tag = array_pop($this->stack);
                 break;
-    
+
             case 'svg':
             case 'path':
             case 'rect':
@@ -437,8 +437,8 @@ class Document extends AbstractTag
                 break;
         }
 
-        if ((!$this->inDefs && $tag) || $tag instanceof StyleTag) {
+        if ((!$this->inDefs && $tag !== null) || $tag instanceof StyleTag) {
             $tag->handleEnd();
         }
     }
-} 
+}
