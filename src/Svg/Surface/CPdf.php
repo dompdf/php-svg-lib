@@ -863,7 +863,7 @@ class CPdf
      * @param $action
      * @param string|array $options
      * @return string|null
-     * @throws FontNotFoundException
+     * @throws \FontLib\Exception\FontNotFoundException
      */
     protected function o_font($id, $action, $options = '')
     {
@@ -1043,7 +1043,7 @@ class CPdf
      * @param int $fontObjId
      * @param array $object_info
      * @return array|false
-     * @throws FontNotFoundException
+     * @throws \FontLib\Exception\FontNotFoundException
      */
     private function processFont(int $fontObjId, array $object_info)
     {
@@ -3461,7 +3461,7 @@ EOT;
      * @param bool $set
      * @param bool $isSubsetting
      * @return int
-     * @throws FontNotFoundException
+     * @throws \FontLib\Exception\FontNotFoundException
      */
     function selectFont($fontName, $encoding = '', $set = true, $isSubsetting = true)
     {
