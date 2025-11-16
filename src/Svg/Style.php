@@ -127,7 +127,7 @@ class Style
                             if ($_selector === ".$_class") {
                                 /** @var \Sabberworm\CSS\Rule\Rule $_rule */
                                 foreach ($_decl->getRules() as $_rule) {
-                                    $styles[$_rule->getRule()] = $_rule->getValue() . "";
+                                    $styles[$_rule->getRule()] = $_rule->getValue()->render() . "";
                                 }
 
                                 break 2;
@@ -139,7 +139,7 @@ class Style
                     if ($_selector === $tag->tagName) {
                         /** @var \Sabberworm\CSS\Rule\Rule $_rule */
                         foreach ($_decl->getRules() as $_rule) {
-                            $styles[$_rule->getRule()] = $_rule->getValue() . "";
+                            $styles[$_rule->getRule()] = $_rule->getValue()->render() . "";
                         }
 
                         break;
