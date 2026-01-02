@@ -131,13 +131,13 @@ class CPdf
     private $gstates = [];
 
     /**
-     * @var array Current color for fill operations, defaults to inactive value,
+     * @var array|null Current color for fill operations, defaults to inactive value,
      * all three components should be between 0 and 1 inclusive when active
      */
     public $currentColor = null;
 
     /**
-     * @var array Current color for stroke operations (lines etc.)
+     * @var array|null Current color for stroke operations (lines etc.)
      */
     public $currentStrokeColor = null;
 
@@ -152,12 +152,12 @@ class CPdf
     public $currentLineStyle = '';
 
     /**
-     * @var array Current line transparency (partial graphics state)
+     * @var array|null Current line transparency (partial graphics state)
      */
     public $currentLineTransparency = ["mode" => "Normal", "opacity" => 1.0];
 
     /**
-     * array Current fill transparency (partial graphics state)
+     * @var array|null Current fill transparency (partial graphics state)
      */
     public $currentFillTransparency = ["mode" => "Normal", "opacity" => 1.0];
 
@@ -306,7 +306,7 @@ class CPdf
     public $destinations = [];
 
     /**
-     * @var array Store the stack for the transaction commands, each item in here is a record of the values of all the
+     * @var array|string Store the stack for the transaction commands, each item in here is a record of the values of all the
      * publiciables within the class, so that the user can rollback at will (from each 'start' command)
      * note that this includes the objects array, so these can be large.
      */
@@ -427,7 +427,7 @@ class CPdf
      * $action = a string specifying the action to be performed, though ALL must support:
      *           'new' - create the object with the id $id
      *           'out' - produce the output for the pdf object
-     * $options = optional, a string or array containing the various parameters for the object
+     * $options = optional, an array containing the various parameters for the object. Or an empty string.
      *
      * These, in conjunction with the output function are the ONLY way for output to be produced
      * within the pdf 'file'.
@@ -436,9 +436,9 @@ class CPdf
     /**
      * Destination object, used to specify the location for the user to jump to, presently on opening
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return string|null
      */
     protected function o_destination($id, $action, $options = '')
@@ -481,8 +481,8 @@ class CPdf
     /**
      * set the viewer preferences
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string|array $options
      * @return string|null
      */
@@ -590,13 +590,15 @@ class CPdf
     /**
      * define the document catalog, the overall controller for the document
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string|array $options
      * @return string|null
      */
     protected function o_catalog($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -669,13 +671,15 @@ class CPdf
     /**
      * object which is a parent to the pages in the document
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return string|null
      */
     protected function o_pages($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -817,13 +821,15 @@ class CPdf
     /**
      * define the outlines in the doc, empty for now
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return string|null
      */
     protected function o_outlines($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -859,14 +865,16 @@ class CPdf
     /**
      * an object to hold the font description
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string|array $options
      * @return string|null
-     * @throws FontNotFoundException
+     * @throws \FontLib\Exception\FontNotFoundException
      */
     protected function o_font($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1043,7 +1051,7 @@ class CPdf
      * @param int $fontObjId
      * @param array $object_info
      * @return array|false
-     * @throws FontNotFoundException
+     * @throws \FontLib\Exception\FontNotFoundException
      */
     private function processFont(int $fontObjId, array $object_info)
     {
@@ -1257,8 +1265,8 @@ class CPdf
     /**
      * A toUnicode section, needed for unicode fonts
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @return null|string
      */
     protected function o_toUnicode($id, $action)
@@ -1317,13 +1325,15 @@ EOT;
     /**
      * a font descriptor, needed for including additional fonts
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return null|string
      */
     protected function o_fontDescriptor($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1382,13 +1392,15 @@ EOT;
     /**
      * the font encoding
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return null|string
      */
     protected function o_fontEncoding($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1435,13 +1447,15 @@ EOT;
     /**
      * a descendent cid font, needed for unicode fonts
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string|array $options
      * @return null|string
      */
     protected function o_fontDescendentCID($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1526,8 +1540,8 @@ EOT;
     /**
      * CID system info section, needed for unicode fonts
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @return null|string
      */
     protected function o_cidSystemInfo($id, $action)
@@ -1569,13 +1583,15 @@ EOT;
     /**
      * a font glyph to character map, needed for unicode fonts
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return null|string
      */
     protected function o_fontGIDtoCIDMap($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1626,13 +1642,15 @@ EOT;
     /**
      * the document procset, solves some problems with printing to old PS printers
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param string $options For the 'add' action, 'ImageB', 'ImageC' or 'ImageI'
      * @return null|string
      */
     protected function o_procset($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1672,8 +1690,8 @@ EOT;
     /**
      * define the document information
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return null|string
      */
@@ -1738,13 +1756,15 @@ EOT;
     /**
      * an action object, used to link to URLS initially
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return null|string
      */
     protected function o_action($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1799,13 +1819,15 @@ EOT;
      * an annotation object, this will add an annotation to the current page.
      * initially will support just link annotations
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return null|string
      */
     protected function o_annotation($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1865,13 +1887,15 @@ EOT;
     /**
      * a page object, it also creates a contents object to hold its contents
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return null|string
      */
     protected function o_page($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -1976,13 +2000,15 @@ EOT;
     /**
      * the contents objects hold all of the content which appears on pages
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string|array $options
      * @return null|string
      */
     protected function o_contents($id, $action, $options = '')
     {
+        $o = [];
+
         if ($action !== 'new') {
             $o = &$this->objects[$id];
         }
@@ -2042,8 +2068,8 @@ EOT;
     }
 
     /**
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @return string|null
      */
     protected function o_embedjs($id, $action)
@@ -2073,8 +2099,8 @@ EOT;
     }
 
     /**
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $code
      * @return null|string
      */
@@ -2109,9 +2135,9 @@ EOT;
     /**
      * an image object, will be an XObject in the document, includes description and data
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return null|string
      */
     protected function o_image($id, $action, $options = '')
@@ -2251,8 +2277,8 @@ EOT;
     /**
      * graphics state object
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return null|string
      */
@@ -2319,7 +2345,7 @@ EOT;
      * @param integer $id
      * @param string $action
      * @param mixed $options
-     * @return string
+     * @return null|string
      */
     protected function o_xobject($id, $action, $options = '')
     {
@@ -2410,9 +2436,9 @@ EOT;
     }
 
     /**
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return null|string
      */
     protected function o_acroform($id, $action, $options = '')
@@ -2471,8 +2497,8 @@ EOT;
     }
 
     /**
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param mixed $options
      * @return null|string
      */
@@ -2564,9 +2590,9 @@ EOT;
 
     /**
      *
-     * @param $id
-     * @param $action
-     * @param string $options
+     * @param string $id
+     * @param string $action
+     * @param array|string $options
      * @return null|string
      */
     protected function o_sig($id, $action, $options = '')
@@ -2673,8 +2699,8 @@ EOT;
     /**
      * encryption object.
      *
-     * @param $id
-     * @param $action
+     * @param string $id
+     * @param string $action
      * @param string $options
      * @return string|null
      */
@@ -2873,12 +2899,13 @@ EOT;
             case 'out':
                 $info = &$this->objects[$id]['info'];
 
+                $file_content_compressed = '';
+
                 if ($this->compressionReady) {
                     $filepath = $info['filepath'];
                     $checksum = md5_file($filepath);
                     $f = fopen($filepath, "rb");
 
-                    $file_content_compressed = '';
                     $deflateContext = deflate_init(ZLIB_ENCODING_DEFLATE, ['level' => 6]);
                     while (($block = fread($f, 8192))) {
                         $file_content_compressed .= deflate_add($deflateContext, $block, ZLIB_NO_FLUSH);
@@ -2917,7 +2944,7 @@ EOT;
     /**
      * calculate the 16 byte version of the 128 bit md5 digest of the string
      *
-     * @param $string
+     * @param string $string
      * @return string
      */
     function md5_16($string)
@@ -2934,7 +2961,7 @@ EOT;
     /**
      * initialize the encryption for processing a particular object
      *
-     * @param $id
+     * @param string $id
      */
     function encryptInit($id)
     {
@@ -2990,7 +3017,7 @@ EOT;
     /**
      * ARC4 encrypt a text string
      *
-     * @param $text
+     * @param string $text
      * @return string
      */
     function ARC4($text)
@@ -3020,7 +3047,7 @@ EOT;
     /**
      * add a link in the document to an external URL
      *
-     * @param $url
+     * @param string $url
      * @param $x0
      * @param $y0
      * @param $x1
@@ -3036,7 +3063,7 @@ EOT;
     /**
      * add a link in the document to an internal destination (ie. within the document)
      *
-     * @param $label
+     * @param string $label
      * @param $x0
      * @param $y0
      * @param $x1
@@ -3461,7 +3488,7 @@ EOT;
      * @param bool $set
      * @param bool $isSubsetting
      * @return int
-     * @throws FontNotFoundException
+     * @throws \FontLib\Exception\FontNotFoundException
      */
     function selectFont($fontName, $encoding = '', $set = true, $isSubsetting = true)
     {
@@ -4060,7 +4087,7 @@ EOT;
      * @param float  $width
      * @param string $cap
      * @param string $join
-     * @param array  $dash
+     * @param array|string  $dash
      * @param int    $phase
      */
     function setLineStyle($width = 1, $cap = '', $join = '', $dash = '', $phase = 0)
@@ -5257,7 +5284,7 @@ EOT;
     /**
      * open an existing object for editing
      *
-     * @param $id
+     * @param int $id
      */
     function reopenObject($id)
     {
@@ -5290,7 +5317,7 @@ EOT;
     /**
      * stop an object from appearing on pages from this point on
      *
-     * @param $id
+     * @param string $id
      */
     function stopObject($id)
     {
@@ -5304,8 +5331,8 @@ EOT;
     /**
      * after an object has been created, it wil only show if it has been added, using this function.
      *
-     * @param $id
-     * @param string $options
+     * @param string $id
+     * @param string $options 'all', 'add', 'even', 'odd', 'nexteven', 'nextodd'
      */
     function addObject($id, $options = 'add')
     {
@@ -5362,7 +5389,7 @@ EOT;
     /**
      * return a storable representation of a specific object
      *
-     * @param $id
+     * @param string $id
      * @return string|null
      */
     function serializeObject($id)
@@ -5452,9 +5479,9 @@ EOT;
     /**
      * extract an integer from a position in a byte stream
      *
-     * @param $data
-     * @param $pos
-     * @param $num
+     * @param array $data
+     * @param int $pos
+     * @param int $num
      * @return int
      */
     private function getBytes(&$data, $pos, $num)
@@ -5493,7 +5520,7 @@ EOT;
      * @param float $h Height
      * @param bool $is_mask true if the image is a mask
      * @param bool $mask true if the image is masked
-     * @throws Exception
+     * @throws \Exception
      */
     function addImagePng(&$img, $file, $x, $y, $w = 0.0, $h = 0.0, $is_mask = false, $mask = null)
     {
@@ -5751,7 +5778,7 @@ EOT;
      * @param $y
      * @param int $w
      * @param int $h
-     * @throws Exception
+     * @throws \Exception
      */
     function addPngFromFile($file, $x, $y, $w = 0, $h = 0)
     {
@@ -5848,6 +5875,8 @@ EOT;
      */
     function addPngFromBuf(&$data, $file, $x, $y, $w = 0.0, $h = 0.0, $is_mask = false, $mask = null)
     {
+        $info = [];
+
         if (isset($this->imagelist[$file])) {
             $data = null;
             $info['width'] = $this->imagelist[$file]['w'];
@@ -6129,9 +6158,9 @@ EOT;
     /**
      * add a JPEG image into the document, from a file
      *
-     * @param $img
-     * @param $x
-     * @param $y
+     * @param string $img
+     * @param int $x
+     * @param int $y
      * @param int $w
      * @param int $h
      */
@@ -6184,8 +6213,8 @@ EOT;
      * @param $imgname
      * @param $imageWidth
      * @param $imageHeight
-     * @param $x
-     * @param $y
+     * @param int $x
+     * @param int $y
      * @param int $w
      * @param int $h
      * @param int $channels
@@ -6315,7 +6344,7 @@ EOT;
      * that be desired.
      *
      * @param $family
-     * @param string $options
+     * @param array|string $options
      */
     function setFontFamily($family, $options = '')
     {

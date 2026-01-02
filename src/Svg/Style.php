@@ -78,9 +78,9 @@ class Style
     }
 
     /**
-     * @param $attributes
+     * @param array<string,string|float|int|null> $attributes
      *
-     * @return Style
+     * @return void
      */
     public function fromAttributes($attributes)
     {
@@ -162,6 +162,11 @@ class Style
         $this->fillStyles($styles);
     }
 
+    /**
+     * @param array<string,string|float|int|null> $styles
+     *
+     * @return void
+     */
     protected function fillStyles($styles)
     {
         $style_map = $this->getStyleMap();
