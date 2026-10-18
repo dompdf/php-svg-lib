@@ -448,7 +448,7 @@ class Path extends Shape
         $toX = $tx - $fx;
         $toY = $ty - $fy;
 
-        if ((float)($toX + $toY) === 0.0) {
+        if ((float)$toX === 0.0 && (float)$toY === 0.0) {
             return;
         }
 
