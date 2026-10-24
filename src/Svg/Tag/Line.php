@@ -39,4 +39,14 @@ class Line extends Shape
         $surface->moveTo($this->x1, $this->y1);
         $surface->lineTo($this->x2, $this->y2);
     }
+
+    /**
+     * A line has no interior, so it is never filled.
+     *
+     * @see https://www.w3.org/TR/SVG11/shapes.html#LineElement
+     */
+    protected function isFillable(): bool
+    {
+        return false;
+    }
 } 

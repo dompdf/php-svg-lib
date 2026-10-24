@@ -32,7 +32,7 @@ class Shape extends AbstractTag
         if ($this->hasShape) {
             $style = $surface->getStyle();
 
-            $fill   = $style->fill   && is_array($style->fill);
+            $fill   = $this->isFillable() && $style->fill && is_array($style->fill);
             $stroke = $style->stroke && is_array($style->stroke);
 
             if ($fill) {
@@ -58,5 +58,13 @@ class Shape extends AbstractTag
         }
 
         $surface->restore();
+    }
+
+    /**
+     * Whether the shape has an interior that the fill applies to.
+     */
+    protected function isFillable(): bool
+    {
+        return true;
     }
 } 
