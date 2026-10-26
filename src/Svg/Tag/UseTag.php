@@ -83,6 +83,18 @@ class UseTag extends AbstractTag
                 $mergedAttributes[$attrKey] = $attrVal;
             }
         }
+        // A use element establishes the viewport of the referenced symbol.
+        // Merge into the instance attributes only, preserving the shared definition.
+        if ($this->reference instanceof Symbol) {
+            foreach (['width', 'height'] as $dimension) {
+                if (isset($attributes[$dimension])) {
+                    $referenceSize = $dimension === 'width'
+                        ? $this->document->getWidth()
+                        : $this->document->getHeight();
+                    $mergedAttributes[$dimension] = $this->convertSize($attributes[$dimension], $referenceSize);
+                }
+            }
+        }
         $mergedAttributes['style'] = ($attributes['style'] ?? '') . ';' . ($mergedAttributes['style'] ?? '');
 
         $this->_handle($this->reference, $mergedAttributes);

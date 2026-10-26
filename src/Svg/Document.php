@@ -416,8 +416,9 @@ class Document extends AbstractTag
 
             case 'symbol':
                 $this->exitDefs();
-                $tag = array_pop($this->stack);
-                break;
+                array_pop($this->stack);
+                // The definition was not rendered, so there is no drawing state to restore.
+                return;
     
             case 'svg':
             case 'path':
