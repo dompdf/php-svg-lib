@@ -32,6 +32,7 @@ final class PathArcTest extends TestCase
     }
 
     /**
+     * @dataProvider arcProvider
      * @param string $d
      * @param array $expectedEndPoints the end point of each arc, in order
      */
