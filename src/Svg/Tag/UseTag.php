@@ -101,7 +101,7 @@ class UseTag extends AbstractTag
         }
 
         if ($this->reference) {
-            $this->_handleEnd($this->reference);
+            $this->reference->handleEnd();
         }
 
         parent::handleEnd();
@@ -115,17 +115,13 @@ class UseTag extends AbstractTag
             $mergedAttributes = $child->attributes;
             $mergedAttributes['style'] = ($attributes['style'] ?? '') . ';' . ($mergedAttributes['style'] ?? '');
             $this->_handle($child, $mergedAttributes);
+            // End the child before the next one starts, so that each shape
+            // is painted with its own path and style
+            $child->handleEnd();
             $child->attributes = $originalAttributes;
             if ($originalStyle !== null) {
                 $child->setStyle($originalStyle);
             }
         }
-    }
-
-    private function _handleEnd($tag) {
-        foreach ($tag->children as $child) {
-            $this->_handleEnd($child);
-        }
-        $tag->handleEnd();
     }
 } 
