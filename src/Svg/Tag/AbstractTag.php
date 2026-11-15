@@ -120,8 +120,14 @@ abstract class AbstractTag
     protected function makeStyle($attributes) {
         $style = new Style($this->document);
         $style->inherit($this);
+
+        // Presentation attributes, style sheet rules, and the style attribute,
+        // in increasing precedence
+        $style->fromAttributes(array_diff_key($attributes, array("style" => true)));
         $style->fromStyleSheets($this, $attributes);
-        $style->fromAttributes($attributes);
+        if (isset($attributes["style"])) {
+            $style->fromAttributes(array("style" => $attributes["style"]));
+        }
 
         return $style;
     }
