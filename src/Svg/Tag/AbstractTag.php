@@ -144,7 +144,9 @@ abstract class AbstractTag
 
             $transformations = array();
             foreach ($matches as $match) {
-                $arguments = preg_split('/[ ,]+/', $match[2]);
+                // Numbers can follow each other without separator, e.g. `50-40` or `.5.5`
+                preg_match_all('/[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/', $match[2], $numbers);
+                $arguments = $numbers[0];
                 array_unshift($arguments, $match[1]);
                 $transformations[] = $arguments;
             }
