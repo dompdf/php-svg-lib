@@ -106,9 +106,22 @@ class Style
     }
 
     public function fromStyleSheets(AbstractTag $tag, $attributes) {
+        $this->fillStyles(self::getStyleSheetRules($tag, $attributes));
+    }
+
+    /**
+     * Get the declarations of the style sheet rules matching an element
+     *
+     * @param AbstractTag $tag
+     * @param array       $attributes
+     * @param array|null  $stylesheets The style sheets to use instead of the ones of the document
+     *
+     * @return string[] The values by property name
+     */
+    public static function getStyleSheetRules(AbstractTag $tag, $attributes, $stylesheets = null) {
         $class = isset($attributes["class"]) ? preg_split('/\s+/', trim($attributes["class"])) : null;
 
-        $stylesheets = $tag->getDocument()->getStyleSheets();
+        $stylesheets = $stylesheets ?? $tag->getDocument()->getStyleSheets();
         $outputFormat = \Sabberworm\CSS\OutputFormat::createCompact();
 
         $styles = array();
@@ -159,7 +172,7 @@ class Style
             }
         }
 
-        $this->fillStyles($styles);
+        return $styles;
     }
 
     protected function fillStyles($styles)
@@ -211,6 +224,12 @@ class Style
 
     static function parseColor($color)
     {
+        // A paint server reference as `#id`, followed by the fallback color if any.
+        // The id is case-sensitive
+        if (preg_match('/^\s*url\(\s*([\'"]?)#([^\'")\s]+)\1\s*\)\s*(.*)$/is', $color, $m)) {
+            return rtrim("#$m[2] $m[3]");
+        }
+
         $color = strtolower(trim($color));
 
         $parts = preg_split('/[^,]\s+/', $color, 2);
@@ -313,20 +332,6 @@ class Style
                 $b * 255.0,
                 $a
             );
-        }
-
-        // Gradient
-        if (strpos($color, "url(#") !== false) {
-            $i = strpos($color, "(");
-            $j = strpos($color, ")");
-
-            // Bad url format
-            if ($i === false || $j === false) {
-                return null;
-            }
-
-            //FIXME: gradients not supported?
-            return null; // trim(substr($color, $i + 1, $j - $i - 1));
         }
 
         return null;

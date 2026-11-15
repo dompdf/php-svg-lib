@@ -123,6 +123,15 @@ abstract class AbstractTag
         $style->fromStyleSheets($this, $attributes);
         $style->fromAttributes($attributes);
 
+        // A paint reference to a missing gradient uses its fallback color, or `none`
+        foreach (array("fill", "stroke") as $paint) {
+            $value = $style->$paint;
+            if (is_string($value) && strpos($value, "#") === 0 && !$this->document->getGradient($value)) {
+                $fallback = Style::parseColor(strstr($value, " ") ?: "none");
+                $style->$paint = $fallback === "currentcolor" ? $style->color : $fallback;
+            }
+        }
+
         return $style;
     }
 

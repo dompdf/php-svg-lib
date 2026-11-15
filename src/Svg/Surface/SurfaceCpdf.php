@@ -23,10 +23,17 @@ class SurfaceCpdf implements SurfaceInterface
     /** @var Style */
     private $style;
 
+    /** @var Document */
+    private $doc;
+
+    /** @var array[] The canvas calls since `beginPath()`, as `[method, args]` */
+    private $path = array();
+
     public function __construct(Document $doc, $canvas = null)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
 
+        $this->doc = $doc;
         $dimensions = $doc->getDimensions();
         $w = $dimensions["width"];
         $h = $dimensions["height"];
@@ -112,13 +119,13 @@ class SurfaceCpdf implements SurfaceInterface
     public function beginPath()
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        // TODO: Implement beginPath() method.
+        $this->path = array();
     }
 
     public function closePath()
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->closePath();
+        $this->addPath("closePath");
     }
 
     public function fillStroke(bool $close = false)
@@ -230,13 +237,13 @@ class SurfaceCpdf implements SurfaceInterface
     public function lineTo($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->lineTo($x, $y);
+        $this->addPath("lineTo", $x, $y);
     }
 
     public function moveTo($x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->moveTo($x, $y);
+        $this->addPath("moveTo", $x, $y);
     }
 
     public function quadraticCurveTo($cpx, $cpy, $x, $y)
@@ -244,13 +251,13 @@ class SurfaceCpdf implements SurfaceInterface
         if (self::DEBUG) echo __FUNCTION__ . "\n";
 
         // FIXME not accurate
-        $this->canvas->quadTo($cpx, $cpy, $x, $y);
+        $this->addPath("quadTo", $cpx, $cpy, $x, $y);
     }
 
     public function bezierCurveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->curveTo($cp1x, $cp1y, $cp2x, $cp2y, $x, $y);
+        $this->addPath("curveTo", $cp1x, $cp1y, $cp2x, $cp2y, $x, $y);
     }
 
     public function arcTo($x1, $y1, $x2, $y2, $radius)
@@ -261,19 +268,19 @@ class SurfaceCpdf implements SurfaceInterface
     public function arc($x, $y, $radius, $startAngle, $endAngle, $anticlockwise = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->ellipse($x, $y, $radius, $radius, 0, 8, $startAngle, $endAngle, false, false, false, true);
+        $this->addPath("ellipse", $x, $y, $radius, $radius, 0, 8, $startAngle, $endAngle, false, false, false, true);
     }
 
     public function circle($x, $y, $radius)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->ellipse($x, $y, $radius, $radius, 0, 8, 0, 360, true, false, false, false);
+        $this->addPath("ellipse", $x, $y, $radius, $radius, 0, 8, 0, 360, true, false, false, false);
     }
 
     public function ellipse($x, $y, $radiusX, $radiusY, $rotation, $startAngle, $endAngle, $anticlockwise)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->ellipse($x, $y, $radiusX, $radiusY, 0, 8, 0, 360, false, false, false, false);
+        $this->addPath("ellipse", $x, $y, $radiusX, $radiusY, 0, 8, 0, 360, false, false, false, false);
     }
 
     public function fillRect($x, $y, $w, $h)
@@ -290,7 +297,7 @@ class SurfaceCpdf implements SurfaceInterface
         $canvas = $this->canvas;
 
         if ($rx <= 0.000001/* && $ry <= 0.000001*/) {
-            $canvas->rect($x, $y, $w, $h);
+            $this->addPath("rect", $x, $y, $w, $h);
 
             return;
         }
@@ -368,6 +375,137 @@ class SurfaceCpdf implements SurfaceInterface
         return $this->style;
     }
 
+    /**
+     * Fill the current path with a gradient, and stroke it afterwards if requested
+     *
+     * Falls back to the average gradient color if the canvas does not support gradients.
+     *
+     * @param array $paint  The gradient geometry, see {@see \Svg\Tag\Shape::resolveGradient()}
+     * @param bool  $stroke Whether to stroke the path
+     */
+    public function fillGradient($paint, $stroke)
+    {
+        if (self::DEBUG) echo __FUNCTION__ . "\n";
+
+        $canvas = $this->canvas;
+
+        if (!method_exists($canvas, "gradient")) {
+            if ($stroke) {
+                $this->fillStroke();
+            } else {
+                $this->fill();
+            }
+            return;
+        }
+
+        $canvas->save();
+        $canvas->clip($canvas->fillRule);
+        $canvas->gradient($paint["type"], $paint["coords"], $paint["stops"], $paint["bbox"], $paint["matrix"], $paint["spread"]);
+        $canvas->restore();
+
+        if ($stroke) {
+            foreach ($this->path as list($method, $args)) {
+                $canvas->$method(...$args);
+            }
+            $canvas->stroke();
+        }
+    }
+
+    /**
+     * Get the bounding box of the current path
+     *
+     * @return float[] The bounding box as `[x1, y1, x2, y2]`
+     */
+    public function getPathBBox()
+    {
+        $xs = array();
+        $ys = array();
+        $current = array(0, 0);
+
+        foreach ($this->path as list($method, $args)) {
+            if ($method === "ellipse") {
+                list($x, $y, $rx, $ry) = $args;
+                $args = array($x - $rx, $y - $ry, $x + $rx, $y + $ry);
+            } elseif ($method === "rect") {
+                list($x, $y, $w, $h) = $args;
+                $args = array($x, $y, $x + $w, $y + $h);
+            } elseif ($method === "quadTo") {
+                // Convert to a cubic curve
+                list($qx, $qy, $x, $y) = $args;
+                $args = array(
+                    $current[0] + 2 / 3 * ($qx - $current[0]), $current[1] + 2 / 3 * ($qy - $current[1]),
+                    $x + 2 / 3 * ($qx - $x), $y + 2 / 3 * ($qy - $y),
+                    $x, $y
+                );
+            }
+
+            if ($method === "curveTo" || $method === "quadTo") {
+                // Add the extrema of the curve between its end points
+                $p = array_merge($current, $args);
+                foreach (array(0, 1) as $axis) {
+                    list($p0, $p1, $p2, $p3) = array($p[$axis], $p[$axis + 2], $p[$axis + 4], $p[$axis + 6]);
+                    $a = ($p1 - $p0) - 2 * ($p2 - $p1) + ($p3 - $p2);
+                    $b = 2 * (($p2 - $p1) - ($p1 - $p0));
+                    $c = $p1 - $p0;
+                    $disc = $b * $b - 4 * $a * $c;
+                    $roots = abs($a) < 1e-12 ? ($b != 0 ? array(-$c / $b) : array()) : ($disc < 0 ? array() : array(
+                        (-$b + sqrt($disc)) / (2 * $a),
+                        (-$b - sqrt($disc)) / (2 * $a)
+                    ));
+                    foreach ($roots as $t) {
+                        if ($t > 0 && $t < 1) {
+                            $u = 1 - $t;
+                            $value = $u * $u * $u * $p0 + 3 * $u * $u * $t * $p1 + 3 * $u * $t * $t * $p2 + $t * $t * $t * $p3;
+                            if ($axis === 0) {
+                                $xs[] = $value;
+                            } else {
+                                $ys[] = $value;
+                            }
+                        }
+                    }
+                }
+                $args = array_slice($args, 4);
+            }
+
+            for ($i = 0; $i + 1 < count($args); $i += 2) {
+                $xs[] = $args[$i];
+                $ys[] = $args[$i + 1];
+                $current = array($args[$i], $args[$i + 1]);
+            }
+        }
+
+        return $xs ? array(min($xs), min($ys), max($xs), max($ys)) : array(0, 0, 0, 0);
+    }
+
+    /**
+     * Add a segment to the current path
+     *
+     * @param string $method The canvas method
+     * @param mixed  ...$args
+     */
+    private function addPath($method, ...$args)
+    {
+        $this->path[] = array($method, $args);
+        $this->canvas->$method(...$args);
+    }
+
+    /**
+     * Get the color to use for a fill or stroke paint
+     *
+     * @param mixed $paint
+     * @return array|null The color, the average stop color for a gradient
+     */
+    private function getPaintColor($paint)
+    {
+        if (is_array($paint)) {
+            return $paint;
+        }
+
+        $gradient = $this->doc->getGradient($paint);
+
+        return $gradient ? $gradient["color"] : null;
+    }
+
     public function setStyle(Style $style)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
@@ -375,11 +513,11 @@ class SurfaceCpdf implements SurfaceInterface
         $this->style = $style;
         $canvas = $this->canvas;
 
-        if (is_array($style->stroke) && $stroke = $style->stroke) {
+        if ($stroke = $this->getPaintColor($style->stroke)) {
             $canvas->setStrokeColor(array((float)$stroke[0]/255, (float)$stroke[1]/255, (float)$stroke[2]/255), true);
         }
 
-        if (is_array($style->fill) && $fill = $style->fill) {
+        if ($fill = $this->getPaintColor($style->fill)) {
             $canvas->setColor(array((float)$fill[0]/255, (float)$fill[1]/255, (float)$fill[2]/255), true);
         }
 
