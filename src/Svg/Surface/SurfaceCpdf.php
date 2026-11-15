@@ -410,7 +410,7 @@ class SurfaceCpdf implements SurfaceInterface
         }
 
         $dashArray = null;
-        if ($style->strokeDasharray) {
+        if ($style->strokeDasharray && strtolower(trim($style->strokeDasharray)) !== "none") {
             $dashArray = preg_split('/\s*,\s*/', $style->strokeDasharray);
         }
 
