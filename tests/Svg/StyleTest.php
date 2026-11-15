@@ -38,6 +38,12 @@ class StyleTest extends TestCase
 
         $this->assertEquals(array(255.0, 0.0, 0.0, 1.0), Style::parseColor("hsl(0, 100%, 50%)"));
         $this->assertEquals(array(255.0, 0.0, 0.0, .5), Style::parseColor("hsl(0, 100%, 50%, .5)"));
+
+        $this->assertEquals("#Grad", Style::parseColor("url(#Grad)"));
+        $this->assertEquals("#g", Style::parseColor("url( \"#g\" )"));
+        $this->assertEquals("#g", Style::parseColor("url('#g')"));
+        $this->assertEquals("#g lime", Style::parseColor("url(#g) lime"));
+        $this->assertEquals(null, Style::parseColor("url(gradients.svg#grad)"));
     }
 
     public function test_fromAttributes()

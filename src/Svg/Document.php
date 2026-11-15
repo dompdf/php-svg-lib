@@ -54,11 +54,15 @@ class Document extends AbstractTag
     /** @var \Sabberworm\CSS\CSSList\Document[] */
     protected $styleSheets = array();
 
+    /** @var array[]|null Gradients by id, collected on first use */
+    protected $gradients;
+
     public $allowExternalReferences = true;
 
     public function loadFile($filename)
     {
         $this->filename = $filename;
+        $this->gradients = null;
     }
 
     protected function initParser() {
@@ -275,6 +279,189 @@ class Document extends AbstractTag
         $id = ltrim($id, "#");
 
         return isset($this->defs[$id]) ? $this->defs[$id] : null;
+    }
+
+    /**
+     * Get a gradient by its paint reference
+     *
+     * @param mixed $ref A paint reference as returned by {@see Style::parseColor()}, e.g. `#id`
+     *
+     * @return array|null The gradient with keys `type` (`lineargradient` or `radialgradient`),
+     *                    `attributes` (lowercase names, including inherited ones), `stops`
+     *                    (list of `[offset, [r, g, b], alpha]`, values from 0 to 1), and
+     *                    `color` (the average stop color as `[r, g, b]` from 0 to 255)
+     */
+    public function getGradient($ref)
+    {
+        if (!is_string($ref) || strlen($ref) < 2 || $ref[0] !== "#") {
+            return null;
+        }
+
+        if ($this->gradients === null) {
+            $this->gradients = $this->collectGradients();
+        }
+
+        $id = substr(explode(" ", $ref, 2)[0], 1);
+
+        return $this->gradients[$id] ?? null;
+    }
+
+    /**
+     * Collect all gradients in a separate pass, as they can be defined after
+     * the elements referencing them
+     *
+     * @return array[]
+     */
+    protected function collectGradients()
+    {
+        $gradients = array();
+        $styles = array();
+        $current = null;
+        $stack = array();
+
+        $parser = xml_parser_create("utf-8");
+        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
+        xml_set_element_handler(
+            $parser,
+            function ($parser, $name, $attributes) use (&$gradients, &$styles, &$current, &$stack) {
+                $name = strtolower($name);
+                $attributes = array_change_key_case($attributes, CASE_LOWER);
+                $stack[] = array($name, $attributes);
+
+                if ($name === "style") {
+                    $styles[] = "";
+                } elseif ($name === "lineargradient" || $name === "radialgradient") {
+                    $current = $attributes["id"] ?? "";
+                    $gradients[$current] = array("type" => $name, "attributes" => $attributes, "stops" => array());
+                } elseif ($name === "stop" && $current !== null) {
+                    // Resolved once all style sheets are known
+                    $gradients[$current]["stops"][] = $stack;
+                }
+            },
+            function ($parser, $name) use (&$current, &$stack) {
+                array_pop($stack);
+                $name = strtolower($name);
+
+                if ($name === "lineargradient" || $name === "radialgradient") {
+                    $current = null;
+                }
+            }
+        );
+        xml_set_character_data_handler($parser, function ($parser, $data) use (&$styles, &$stack) {
+            if ($stack && end($stack)[0] === "style") {
+                $styles[count($styles) - 1] .= $data;
+            }
+        });
+
+        $fp = fopen($this->filename, "r");
+        while ($line = fread($fp, 8192)) {
+            xml_parse($parser, $line, false);
+        }
+        xml_parse($parser, "", true);
+        fclose($fp);
+
+        if (PHP_MAJOR_VERSION < 8) {
+            xml_parser_free($parser);
+        }
+
+        // Resolve the stop properties along the ancestors of each stop
+        $styleSheets = array();
+        foreach ($styles as $css) {
+            $styleSheets[] = (new \Sabberworm\CSS\Parser($css))->parse();
+        }
+        foreach ($gradients as $id => $gradient) {
+            foreach ($gradient["stops"] as $i => $ancestors) {
+                $props = array("color" => array(0, 0, 0, 1), "stop-color" => array(0, 0, 0, 1), "stop-opacity" => 1.0);
+                foreach ($ancestors as list($name, $attributes)) {
+                    $props = $this->getStopProperties($name, $attributes, $props, $styleSheets);
+                }
+                $offset = trim($attributes["offset"] ?? "0");
+                $color = $props["stop-color"];
+                $gradients[$id]["stops"][$i] = array(
+                    substr($offset, -1) === "%" ? (float) $offset / 100 : (float) $offset,
+                    array($color[0] / 255, $color[1] / 255, $color[2] / 255),
+                    max(0, min(1, $props["stop-opacity"] * $color[3]))
+                );
+            }
+        }
+
+        foreach ($gradients as $id => $gradient) {
+            // Inherit attributes and stops from referenced gradients
+            $seen = array($id => true);
+            $ref = ltrim($gradient["attributes"]["href"] ?? $gradient["attributes"]["xlink:href"] ?? "", "#");
+
+            while (isset($gradients[$ref]) && !isset($seen[$ref])) {
+                $seen[$ref] = true;
+                $parent = $gradients[$ref];
+                $gradient["attributes"] += $parent["attributes"];
+                $gradient["stops"] = $gradient["stops"] ?: $parent["stops"];
+                $ref = ltrim($parent["attributes"]["href"] ?? $parent["attributes"]["xlink:href"] ?? "", "#");
+            }
+
+            // Offsets are clamped, and never decrease
+            $max = 0.0;
+            foreach ($gradient["stops"] as $i => $stop) {
+                $max = $gradient["stops"][$i][0] = max($max, min(1.0, $stop[0]));
+            }
+
+            $colors = array_column($gradient["stops"], 1) ?: array(array(0, 0, 0));
+            $gradient["color"] = array_map(function (...$values) {
+                return array_sum($values) / count($values) * 255;
+            }, ...$colors);
+
+            $gradients[$id] = $gradient;
+        }
+
+        return $gradients;
+    }
+
+    /**
+     * Resolve the properties relevant for gradient stops of an element
+     *
+     * @param string $name        The element name
+     * @param array  $attributes  The element attributes
+     * @param array  $parent      The properties of the parent element
+     * @param array  $styleSheets The style sheets of the document
+     *
+     * @return array `color` and `stop-color` as `[r, g, b, a]`, and `stop-opacity`
+     */
+    protected function getStopProperties($name, $attributes, array $parent, array $styleSheets)
+    {
+        // Presentation attributes, style sheet rules, and inline styles, in
+        // increasing precedence
+        $declarations = array_merge(
+            $attributes,
+            Style::getStyleSheetRules(new Stop($this, $name), $attributes, $styleSheets),
+            Style::parseCssStyle($attributes["style"] ?? "")
+        );
+        $value = function ($property, $initial) use ($declarations) {
+            $value = strtolower(trim($declarations[$property] ?? ""));
+            return $value === "" ? $initial : $value;
+        };
+
+        // `color` is inherited, `stop-color` and `stop-opacity` only explicitly
+        $color = Style::parseColor($value("color", "inherit"));
+        $props = array("color" => is_array($color) ? $color : $parent["color"]);
+
+        $stopColor = $value("stop-color", "black");
+        if ($stopColor === "inherit") {
+            $props["stop-color"] = $parent["stop-color"];
+        } elseif ($stopColor === "currentcolor") {
+            $props["stop-color"] = $props["color"];
+        } else {
+            $stopColor = Style::parseColor($stopColor);
+            $props["stop-color"] = is_array($stopColor) ? $stopColor : array(0, 0, 0, 1);
+        }
+
+        $opacity = $value("stop-opacity", "1");
+        if ($opacity === "inherit") {
+            $props["stop-opacity"] = $parent["stop-opacity"];
+        } else {
+            $props["stop-opacity"] = substr($opacity, -1) === "%" ? (float) $opacity / 100
+                : (is_numeric($opacity) ? (float) $opacity : 1.0);
+        }
+
+        return $props;
     }
 
     private function _tagStart($parser, $name, $attributes)
